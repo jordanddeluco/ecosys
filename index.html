@@ -1,0 +1,132 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+    <meta name="description" content="ecosys — a small ecosystem of personal apps that work together" />
+    <title>ecosys</title>
+    <link rel="manifest" href="/manifest.webmanifest" />
+    <link rel="icon" href="/shared/icons/ecosys.svg" type="image/svg+xml" />
+    <script>
+      try {
+        var s = JSON.parse(localStorage.getItem('ecosys:v1:settings') || '{}');
+        var t = s.theme || 'system';
+        if (t === 'system') t = matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light';
+        document.documentElement.dataset.theme = t;
+        document.documentElement.dataset.accent = s.accent || 'iris';
+      } catch (e) {}
+    </script>
+    <link rel="stylesheet" href="/shared/ui.css" />
+    <style>
+      body { background: var(--bg); }
+      .home { min-height: 100dvh; display: flex; flex-direction: column; position: relative; overflow-x: hidden; }
+      .home::before { content: ''; position: absolute; inset: 0 0 auto 0; height: 520px; background: var(--brand-glow); pointer-events: none; opacity: 0.9; }
+      .home-top { position: relative; display: flex; align-items: center; gap: 10px; padding: 18px 24px; max-width: 1040px; width: 100%; margin: 0 auto; }
+      .home-top .brand .app-icon { width: 34px; height: 34px; border-radius: 10px; }
+      .home-top .brand span { font-size: 21px; }
+      .home-main { position: relative; flex: 1; width: 100%; max-width: 1040px; margin: 0 auto; padding: 28px 24px 80px; }
+      .hello { font: 800 clamp(34px, 6vw, 56px) / 1.04 var(--font-display); letter-spacing: -0.035em; margin: 18px 0 10px; }
+      .hello .grad { background: var(--brand-gradient); -webkit-background-clip: text; background-clip: text; color: transparent; }
+      .lede { color: var(--text-2); font-size: 17px; line-height: 24px; max-width: 560px; margin: 0; }
+      .apps { display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 16px; margin-top: 36px; }
+      .app-card { position: relative; display: flex; flex-direction: column; gap: 14px; padding: 20px; border-radius: 22px; background: var(--surface-1); border: 1px solid var(--border); color: var(--text); text-decoration: none !important; transition: transform var(--dur) var(--ease-out), box-shadow var(--dur), border-color var(--dur); overflow: hidden; }
+      [data-theme='light'] .app-card { border-color: transparent; box-shadow: var(--shadow-2); }
+      .app-card:hover { transform: translateY(-3px); box-shadow: var(--shadow-3); border-color: var(--border-strong); }
+      .app-card .top { display: flex; align-items: center; gap: 14px; }
+      .app-card h2 { margin: 0; font: 700 22px/1.1 var(--font-display); letter-spacing: -0.02em; }
+      .app-card .blurb { color: var(--text-2); font-size: 14px; margin-top: 3px; }
+      .app-card .open { margin-left: auto; color: var(--text-3); }
+      .glance { display: flex; flex-direction: column; gap: 2px; min-height: 120px; }
+      .glance .row { display: flex; align-items: center; gap: 10px; padding: 7px 2px; font-size: 14px; border-top: 1px solid var(--separator); min-width: 0; }
+      .glance .row:first-child { border-top: 0; }
+      .glance .row .t { color: var(--text-2); font-variant-numeric: tabular-nums; width: 64px; flex: none; font-size: 13px; }
+      .glance .row .n { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; flex: 1; min-width: 0; }
+      .glance .bar { width: 4px; align-self: stretch; border-radius: 2px; background: var(--ev); flex: none; }
+      .glance .ring { width: 16px; height: 16px; border-radius: 50%; border: 1.6px solid var(--c); flex: none; }
+      .glance .none { color: var(--text-3); font-size: 14px; padding: 7px 2px; }
+      .stat { display: flex; gap: 22px; }
+      .stat div { display: flex; flex-direction: column; }
+      .stat strong { font: 700 26px/1 var(--font-display); letter-spacing: -0.02em; font-variant-numeric: tabular-nums; }
+      .stat span { font-size: 12px; color: var(--text-3); margin-top: 4px; }
+      .together { margin-top: 44px; display: grid; grid-template-columns: repeat(auto-fill, minmax(240px, 1fr)); gap: 12px; }
+      .together .tip { display: flex; gap: 12px; padding: 16px; border-radius: var(--r-lg); background: var(--accent-softer); color: var(--text-2); font-size: 13.5px; line-height: 19px; }
+      .together .tip .i { color: var(--accent-text); margin-top: 1px; }
+      .together .tip strong { color: var(--text); display: block; margin-bottom: 2px; font-size: 14px; }
+      .section-title { font: var(--t-cap); text-transform: uppercase; letter-spacing: 0.07em; color: var(--text-3); margin: 44px 0 0; }
+      .home-foot { position: relative; text-align: center; color: var(--text-3); font-size: 12.5px; padding: 24px; display: flex; gap: 8px; align-items: center; justify-content: center; }
+      .home-foot .i { color: var(--accent-text); }
+      @media (max-width: 640px) { .home-main { padding-top: 8px; } .apps { margin-top: 26px; } }
+    </style>
+  </head>
+  <body>
+    <div class="home" id="home"></div>
+    <script type="module">
+      import { initShell, appIcon, icon, esc, sidebarFoot, APPS, switcherButton } from '/shared/shell.js';
+      import { db, settings } from '/shared/store.js';
+      import { todayYmd, fmt, fmtTime, pad, fmtDuration } from '/shared/dates.js';
+      import { tasksIn, eventInstances, dayInstances, byTimeThenOrder, colorVar } from '/shared/model.js';
+
+      initShell({ app: 'home' });
+
+      function greeting() {
+        const h = new Date().getHours();
+        return h < 5 ? 'Good night' : h < 12 ? 'Good morning' : h < 18 ? 'Good afternoon' : 'Good evening';
+      }
+
+      function render() {
+        const today = todayYmd();
+        const now = new Date();
+        const tasks = tasksIn('today').sort(byTimeThenOrder);
+        const lists = new Map(db.all('lists').map((l) => [l.id, l]));
+        const inst = eventInstances(today, today);
+        const { allDay, timed } = dayInstances(inst, today);
+        const upcoming = timed.filter((i) => i.end > now);
+        const nextEv = upcoming[0];
+        const planned = tasks.reduce((s, t) => s + (t.duration || 0), 0);
+        const hhmm = (d) => `${pad(d.getHours())}:${pad(d.getMinutes())}`;
+        const evRows = [...allDay.map((i) => ({ i, t: 'All day' })), ...upcoming.map((i) => ({ i, t: fmtTime(hhmm(i.start), { compact: true }) }))].slice(0, 4);
+        const tkRows = tasks.slice(0, 4);
+        document.title = 'ecosys';
+        document.getElementById('home').innerHTML = `
+          <header class="home-top">
+            <a class="brand" href="/"><span class="app-icon">${appIcon('home')}</span><span>ecosys</span></a>
+            <span class="grow"></span>
+            <button type="button" class="icon-btn" data-open-palette aria-label="Search" title="Command menu">${icon('search')}</button>
+            <button type="button" class="icon-btn" data-cycle-theme aria-label="Change appearance" title="Appearance">${icon('contrast')}</button>
+            <button type="button" class="icon-btn" data-open-settings aria-label="Settings" title="Settings">${icon('gear')}</button>
+            ${switcherButton()}
+          </header>
+          <main class="home-main">
+            <p class="muted" style="margin:0;font-weight:600">${esc(fmt(now, { weekday: 'long', month: 'long', day: 'numeric' }))}</p>
+            <h1 class="hello">${greeting()}.<br><span class="grad">${tasks.length ? `${tasks.length} ${tasks.length === 1 ? 'thing' : 'things'} today` : 'Your day is clear'}${nextEv ? `, next up ${esc(fmtTime(hhmm(nextEv.start), { compact: true }))}` : ''}.</span></h1>
+            <p class="lede">Simple apps that share one calendar of your life. Tasks show up on your schedule, time blocks show up in your lists — and everything stays on this device.</p>
+
+            <div class="apps">
+              <a class="app-card" href="/tasks/#/today">
+                <div class="top"><span class="app-icon md">${appIcon('tasks')}</span><div><h2>Tasks</h2><div class="blurb">To-dos, lists &amp; plans</div></div><span class="open">${icon('arrow-up-right')}</span></div>
+                <div class="stat"><div><strong>${tasks.length}</strong><span>today</span></div><div><strong>${tasksIn('inbox').length}</strong><span>in inbox</span></div><div><strong>${planned ? fmtDuration(planned) : '—'}</strong><span>planned</span></div></div>
+                <div class="glance">${tkRows.map((t) => `<div class="row"><span class="ring" style="--c:${colorVar(lists.get(t.listId)?.color)}"></span><span class="n">${esc(t.title)}</span>${t.time ? `<span class="t" style="text-align:right">${fmtTime(t.time, { compact: true })}</span>` : ''}</div>`).join('') || '<div class="none">Nothing due today.</div>'}</div>
+              </a>
+              <a class="app-card" href="/schedule/">
+                <div class="top"><span class="app-icon md">${appIcon('schedule')}</span><div><h2>Schedule</h2><div class="blurb">Calendar &amp; time blocks</div></div><span class="open">${icon('arrow-up-right')}</span></div>
+                <div class="stat"><div><strong>${allDay.length + timed.length}</strong><span>events today</span></div><div><strong>${upcoming.length}</strong><span>still to come</span></div></div>
+                <div class="glance">${evRows.map(({ i, t }) => `<div class="row" style="--ev:${colorVar(i.color)}"><span class="bar"></span><span class="t">${t}</span><span class="n">${esc(i.event.title)}</span></div>`).join('') || '<div class="none">No more events today.</div>'}</div>
+              </a>
+            </div>
+
+            <div class="section-title">How they work together</div>
+            <div class="together">
+              <div class="tip">${icon('calendar-plus')}<div><strong>Time-block tasks</strong>Drag a task from the Tasks panel in schedule onto the calendar. It's the same task — check it off in either app.</div></div>
+              <div class="tip">${icon('star')}<div><strong>Events in Today</strong>Your schedule's events appear at the top of Today and Upcoming in tasks.</div></div>
+              <div class="tip">${icon('sparkle')}<div><strong>Type naturally</strong>“Lunch fri 1pm at Cafe Luna” or “task Call mom tonight” — both apps understand you.</div></div>
+              <div class="tip">${icon('apps')}<div><strong>One switcher, one ⌘K</strong>Jump between apps from the grid icon, and search everything with ⌘K (Ctrl+K).</div></div>
+            </div>
+          </main>
+          <footer class="home-foot">${icon('shield', { size: 16 })}Private by design — no accounts, no servers. Your data lives in this browser.</footer>`;
+      }
+      render();
+      db.on(render);
+      setInterval(render, 60000);
+    </script>
+  </body>
+</html>
