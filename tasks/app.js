@@ -429,7 +429,7 @@ function eventsStrip(dayYmd, instances) {
   const row = (i, when) => {
     const past = !i.allDay && i.end < now;
     const isNow = !i.allDay && i.start <= now && i.end > now;
-    return `<a class="event-row${past ? ' past' : ''}${isNow ? ' now' : ''}" href="/schedule/#/day/${dayYmd}/event/${encodeURIComponent(i.event.id)}" style="--ev:${colorVar(i.color)}" title="Open in schedule">
+    return `<a class="event-row${past ? ' past' : ''}${isNow ? ' now' : ''}" href="../schedule/#/day/${dayYmd}/event/${encodeURIComponent(i.event.id)}" style="--ev:${colorVar(i.color)}" title="Open in schedule">
       <span class="bar"></span><span class="when">${when}</span><span class="what">${esc(i.event.title)}</span>${i.event.location ? `<span class="where">${esc(i.event.location)}</span>` : ''}</a>`;
   };
   const t = (d) => fmtTime(`${pad(d.getHours())}:${pad(d.getMinutes())}`, { compact: true });
@@ -683,7 +683,7 @@ function rowMenu(anchor, id) {
     { label: 'Someday', icon: 'archive', hint: '<kbd>s</kbd>', onSelect: () => setWhen(id, { date: null, someday: true }) },
     { sep: true },
     { label: 'Move to list…', icon: 'list', hint: '<kbd>l</kbd>', onSelect: () => moveToListMenu(anchor, id) },
-    { label: 'Plan in schedule', icon: 'calendar-plus', onSelect: () => (location.href = `/schedule/#/day/${t.date || todayYmd()}/task/${t.id}`) },
+    { label: 'Plan in schedule', icon: 'calendar-plus', onSelect: () => (location.href = `../schedule/#/day/${t.date || todayYmd()}/task/${t.id}`) },
     { label: 'Duplicate', icon: 'copy', hint: '<kbd>d</kbd>', onSelect: () => duplicate(id) },
     { label: 'Delete', icon: 'trash', danger: true, hint: '<kbd>⌫</kbd>', onSelect: () => remove(id) },
   ]);
@@ -1091,7 +1091,7 @@ function renderInspector() {
       </div>
       ${
         !t.done
-          ? `<a class="btn btn-tint btn-block" style="margin-top:16px" href="/schedule/#/day/${t.date || todayYmd()}/task/${t.id}">${icon('calendar-plus', { size: 18 })}${t.time ? 'See the time block in schedule' : 'Plan time for it in schedule'}</a>`
+          ? `<a class="btn btn-tint btn-block" style="margin-top:16px" href="../schedule/#/day/${t.date || todayYmd()}/task/${t.id}">${icon('calendar-plus', { size: 18 })}${t.time ? 'See the time block in schedule' : 'Plan time for it in schedule'}</a>`
           : ''
       }
     </div>
@@ -1267,7 +1267,7 @@ $('#view-menu').addEventListener('click', (e) => {
     items.push(
       { label: 'Rename or recolour…', icon: 'edit', onSelect: () => editListDialog(list) },
       { label: state.showDone ? 'Hide completed' : 'Show completed', icon: state.showDone ? 'eye-off' : 'eye', onSelect: () => ((state.showDone = !state.showDone), renderBody()) },
-      { label: 'Open in schedule', icon: 'calendar', onSelect: () => (location.href = '/schedule/') },
+      { label: 'Open in schedule', icon: 'calendar', onSelect: () => (location.href = '../schedule/') },
       { sep: true },
       { label: 'Delete list…', icon: 'trash', danger: true, onSelect: () => deleteList(list) },
       { sep: true },
@@ -1293,7 +1293,7 @@ $('#view-menu').addEventListener('click', (e) => {
   }
   items.push(
     { label: 'New list…', icon: 'plus', onSelect: () => editListDialog(null, (l) => go(l.id)) },
-    { label: 'Open schedule', iconHtml: icon('calendar', { size: 18 }), onSelect: () => (location.href = '/schedule/') },
+    { label: 'Open schedule', iconHtml: icon('calendar', { size: 18 }), onSelect: () => (location.href = '../schedule/') },
     { label: 'Settings', icon: 'gear', hint: '<kbd>,</kbd>', onSelect: () => openSettings() },
   );
   openMenu(e.currentTarget, items, { align: 'end' });

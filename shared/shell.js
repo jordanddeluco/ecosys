@@ -24,10 +24,13 @@ export function html(strings, ...vals) {
 
 // ---------------------------------------------------------------- apps registry & icons
 
+// The site root, wherever it's hosted: '/' locally, '/ecosys/' on GitHub Pages.
+export const BASE = new URL('../', import.meta.url).pathname;
+
 export const APPS = [
-  { id: 'home', name: 'Home', url: '/', blurb: 'Your day at a glance' },
-  { id: 'tasks', name: 'Tasks', url: '/tasks/', blurb: 'To-dos, lists & plans' },
-  { id: 'schedule', name: 'Schedule', url: '/schedule/', blurb: 'Calendar & time blocks' },
+  { id: 'home', name: 'Home', url: BASE, blurb: 'Your day at a glance' },
+  { id: 'tasks', name: 'Tasks', url: `${BASE}tasks/`, blurb: 'To-dos, lists & plans' },
+  { id: 'schedule', name: 'Schedule', url: `${BASE}schedule/`, blurb: 'Calendar & time blocks' },
 ];
 
 let gid = 0;

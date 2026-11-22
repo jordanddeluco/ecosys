@@ -36,7 +36,8 @@ function send(res, code, body, type = 'text/plain; charset=utf-8', extra = {}) {
 const server = http.createServer(async (req, res) => {
   try {
     if (req.method !== 'GET' && req.method !== 'HEAD') return send(res, 405, 'Method not allowed');
-    const url = new URL(req.url, 'http://localhost');
+    // Collapse leading slashes so "//foo" isn't parsed as a protocol-relative URL.
+    const url = new URL(req.url.replace(/^\/+/, '/'), 'http://localhost');
     const pathname = decodeURIComponent(url.pathname);
 
     // Never serve dotfiles/dot-directories (.git, .claude, …).

@@ -65,7 +65,7 @@ $('#app').innerHTML = `
         <div id="cal-list"></div>
       </div>
       <div class="side-section">
-        <div class="side-label"><span>From tasks</span><a class="icon-btn sm" href="/tasks/" aria-label="Open tasks" title="Open tasks">${icon('arrow-up-right', { size: 15 })}</a></div>
+        <div class="side-label"><span>From tasks</span><a class="icon-btn sm" href="../tasks/" aria-label="Open tasks" title="Open tasks">${icon('arrow-up-right', { size: 15 })}</a></div>
         <div id="tasklist-toggles"></div>
       </div>
     </div>
@@ -496,7 +496,7 @@ function renderPanel() {
   };
   panelEl.innerHTML = `
     <div class="tp-head"><h2>${icon('checklist', { size: 20 })}Tasks</h2>
-      <a class="icon-btn" href="/tasks/#/today" title="Open tasks" aria-label="Open tasks">${icon('arrow-up-right', { size: 18 })}</a>
+      <a class="icon-btn" href="../tasks/#/today" title="Open tasks" aria-label="Open tasks">${icon('arrow-up-right', { size: 18 })}</a>
       <button type="button" class="icon-btn" data-toggle-panel aria-label="Close tasks panel">${icon('x')}</button></div>
     <div class="tp-load">
       <div class="row-flex"><span><strong>${fmtDuration(w.tk) || '0m'}</strong> tasks · <strong>${fmtDuration(w.ev) || '0m'}</strong> events</span><span>${esc(dayLabel(day))}</span></div>
@@ -708,12 +708,12 @@ function openTaskPopover(id, anchor) {
        <div class="r">${icon('clock')}<span>${esc(when)}${t.duration && !t.time ? ` · ${fmtDuration(t.duration)}` : ''}</span></div>
        ${t.repeat ? `<div class="r">${icon('repeat')}<span>${esc(describe(t.repeat))}</span></div>` : ''}
        ${t.deadline ? `<div class="r">${icon('flag')}<span>Deadline ${esc(dayLabel(t.deadline))}</span></div>` : ''}
-       <div class="r">${icon('list')}<span>${esc(l?.name || 'Inbox')} · a task from <a href="/tasks/#/task/${t.id}">tasks</a></span></div>
+       <div class="r">${icon('list')}<span>${esc(l?.name || 'Inbox')} · a task from <a href="../tasks/#/task/${t.id}">tasks</a></span></div>
        ${t.checklist?.length ? `<div class="r">${icon('checklist')}<span>${t.checklist.filter((x) => x.done).length} of ${t.checklist.length} done</span></div>` : ''}
        ${t.notes ? `<div class="r">${icon('note')}<span class="notes">${esc(t.notes)}</span></div>` : ''}
      </div>
      <div class="ep-actions">
-       <a class="btn btn-tint btn-sm" href="/tasks/#/task/${t.id}">${icon('arrow-up-right', { size: 15 })}Open in tasks</a>
+       <a class="btn btn-tint btn-sm" href="../tasks/#/task/${t.id}">${icon('arrow-up-right', { size: 15 })}Open in tasks</a>
        ${t.time ? `<button type="button" class="btn btn-ghost btn-sm" data-pop="unblock">${icon('x', { size: 15 })}Remove time</button>` : ''}
        <span class="grow"></span>
        ${t.date ? `<button type="button" class="icon-btn sm" data-pop="undate" aria-label="Remove from calendar" title="Remove from calendar">${icon('calendar', { size: 17 })}</button>` : ''}
@@ -1531,7 +1531,7 @@ $('#more-menu').addEventListener('click', (e) => {
     { label: 'Go to date…', icon: 'calendar', hint: '<kbd>g</kbd>', onSelect: () => goToDatePicker($('#range-title')) },
     { sep: true },
     { label: 'New calendar…', icon: 'plus', onSelect: () => editCalendarDialog(null) },
-    { label: 'Open tasks', icon: 'arrow-up-right', onSelect: () => (location.href = '/tasks/') },
+    { label: 'Open tasks', icon: 'arrow-up-right', onSelect: () => (location.href = '../tasks/') },
     { label: 'Settings', icon: 'gear', hint: '<kbd>,</kbd>', onSelect: () => openSettings() },
   ], { align: 'end' });
 });

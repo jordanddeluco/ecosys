@@ -7,7 +7,11 @@ A small ecosystem of simple personal apps that work together. The first two:
 
 They share one local data store, so a change in one app shows up in the other instantly — even in another tab or window.
 
-## Run it
+**Live:** https://jordanddeluco.github.io/ecosys/ — [tasks](https://jordanddeluco.github.io/ecosys/tasks/) · [schedule](https://jordanddeluco.github.io/ecosys/schedule/)
+
+The live site is published from `main` with GitHub Pages; every push updates it within a minute or two. Your data stays in your browser, separate from a local copy.
+
+## Run it locally
 
 Needs [Node.js](https://nodejs.org) 18 or newer. There is nothing to install.
 
@@ -66,7 +70,7 @@ schedule/             the schedule app
 tests/                parser and recurrence tests — run with `npm test`
 ```
 
-Adding the next app: create a folder with an `index.html` that loads `/shared/ui.css`. Call `initShell({ app: 'yourapp' })` and read and write through `db` from `shared/store.js`. Then add it to `APPS` in `shared/shell.js` so it appears in the switcher.
+Adding the next app: create a folder with an `index.html` that loads `../shared/ui.css`. Call `initShell({ app: 'yourapp' })` and read and write through `db` from `shared/store.js`. Then add it to `APPS` in `shared/shell.js` so it appears in the switcher.
 
 ## Privacy
 

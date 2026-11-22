@@ -5,8 +5,8 @@
     <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
     <meta name="description" content="ecosys — a small ecosystem of personal apps that work together" />
     <title>ecosys</title>
-    <link rel="manifest" href="/manifest.webmanifest" />
-    <link rel="icon" href="/shared/icons/ecosys.svg" type="image/svg+xml" />
+    <link rel="manifest" href="manifest.webmanifest" />
+    <link rel="icon" href="shared/icons/ecosys.svg" type="image/svg+xml" />
     <script>
       try {
         var s = JSON.parse(localStorage.getItem('ecosys:v1:settings') || '{}');
@@ -16,7 +16,7 @@
         document.documentElement.dataset.accent = s.accent || 'iris';
       } catch (e) {}
     </script>
-    <link rel="stylesheet" href="/shared/ui.css" />
+    <link rel="stylesheet" href="shared/ui.css" />
     <style>
       body { background: var(--bg); }
       .home { min-height: 100dvh; display: flex; flex-direction: column; position: relative; overflow-x: hidden; }
@@ -61,10 +61,10 @@
   <body>
     <div class="home" id="home"></div>
     <script type="module">
-      import { initShell, appIcon, icon, esc, sidebarFoot, APPS, switcherButton } from '/shared/shell.js';
-      import { db, settings } from '/shared/store.js';
-      import { todayYmd, fmt, fmtTime, pad, fmtDuration } from '/shared/dates.js';
-      import { tasksIn, eventInstances, dayInstances, byTimeThenOrder, colorVar } from '/shared/model.js';
+      import { initShell, appIcon, icon, esc, sidebarFoot, APPS, switcherButton } from './shared/shell.js';
+      import { db, settings } from './shared/store.js';
+      import { todayYmd, fmt, fmtTime, pad, fmtDuration } from './shared/dates.js';
+      import { tasksIn, eventInstances, dayInstances, byTimeThenOrder, colorVar } from './shared/model.js';
 
       initShell({ app: 'home' });
 
@@ -89,7 +89,7 @@
         document.title = 'ecosys';
         document.getElementById('home').innerHTML = `
           <header class="home-top">
-            <a class="brand" href="/"><span class="app-icon">${appIcon('home')}</span><span>ecosys</span></a>
+            <a class="brand" href="./"><span class="app-icon">${appIcon('home')}</span><span>ecosys</span></a>
             <span class="grow"></span>
             <button type="button" class="icon-btn" data-open-palette aria-label="Search" title="Command menu">${icon('search')}</button>
             <button type="button" class="icon-btn" data-cycle-theme aria-label="Change appearance" title="Appearance">${icon('contrast')}</button>
@@ -102,12 +102,12 @@
             <p class="lede">Simple apps that share one calendar of your life. Tasks show up on your schedule, time blocks show up in your lists — and everything stays on this device.</p>
 
             <div class="apps">
-              <a class="app-card" href="/tasks/#/today">
+              <a class="app-card" href="tasks/#/today">
                 <div class="top"><span class="app-icon md">${appIcon('tasks')}</span><div><h2>Tasks</h2><div class="blurb">To-dos, lists &amp; plans</div></div><span class="open">${icon('arrow-up-right')}</span></div>
                 <div class="stat"><div><strong>${tasks.length}</strong><span>today</span></div><div><strong>${tasksIn('inbox').length}</strong><span>in inbox</span></div><div><strong>${planned ? fmtDuration(planned) : '—'}</strong><span>planned</span></div></div>
                 <div class="glance">${tkRows.map((t) => `<div class="row"><span class="ring" style="--c:${colorVar(lists.get(t.listId)?.color)}"></span><span class="n">${esc(t.title)}</span>${t.time ? `<span class="t" style="text-align:right">${fmtTime(t.time, { compact: true })}</span>` : ''}</div>`).join('') || '<div class="none">Nothing due today.</div>'}</div>
               </a>
-              <a class="app-card" href="/schedule/">
+              <a class="app-card" href="schedule/">
                 <div class="top"><span class="app-icon md">${appIcon('schedule')}</span><div><h2>Schedule</h2><div class="blurb">Calendar &amp; time blocks</div></div><span class="open">${icon('arrow-up-right')}</span></div>
                 <div class="stat"><div><strong>${allDay.length + timed.length}</strong><span>events today</span></div><div><strong>${upcoming.length}</strong><span>still to come</span></div></div>
                 <div class="glance">${evRows.map(({ i, t }) => `<div class="row" style="--ev:${colorVar(i.color)}"><span class="bar"></span><span class="t">${t}</span><span class="n">${esc(i.event.title)}</span></div>`).join('') || '<div class="none">No more events today.</div>'}</div>

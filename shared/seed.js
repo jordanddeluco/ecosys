@@ -61,7 +61,7 @@ export function seed(db) {
     date: today,
     checklist: check('Oat milk', 'Eggs', 'Coffee beans', 'Basil'),
   });
-  task({ title: 'Reply to Jordan about the venue', listId: personal.id, date: today, priority: 1, tags: ['email'] });
+  task({ title: 'Reply to Taylor about the venue', listId: personal.id, date: today, priority: 1, tags: ['email'] });
   task({ title: 'Read 20 pages', listId: personal.id, date: today, evening: true, repeat: { freq: 'day', interval: 1, from: 'due' } });
 
   // Upcoming
