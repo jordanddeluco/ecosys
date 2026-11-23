@@ -1,0 +1,552 @@
+/* ecosys notes — editor (notes/editor). Apple Notes' styles on the ecosys tokens (shared/ui.css).
+   Light / dim / dark come from the tokens; highlight two-tones are defined here. */
+
+/* ------------------------------------------------------------------ tokens */
+:root {
+  --hl-purple-bg: rgb(175 82 222 / 0.17);
+  --hl-purple-fg: #8a35b8;
+  --hl-pink-bg: rgb(255 45 85 / 0.15);
+  --hl-pink-fg: #c0153f;
+  --hl-orange-bg: rgb(255 149 0 / 0.2);
+  --hl-orange-fg: #a65200;
+  --hl-mint-bg: rgb(0 199 190 / 0.2);
+  --hl-mint-fg: #00766f;
+  --hl-blue-bg: rgb(0 122 255 / 0.15);
+  --hl-blue-fg: #0b59b8;
+  --ne-code-bg: rgb(118 118 140 / 0.09);
+  --ne-find: rgb(255 214 10 / 0.38);
+  --ne-find-cur: #ffd60a;
+}
+[data-theme='dark'],
+[data-theme='dim'] {
+  --hl-purple-bg: rgb(191 90 242 / 0.3);
+  --hl-purple-fg: #e2b8ff;
+  --hl-pink-bg: rgb(255 55 95 / 0.28);
+  --hl-pink-fg: #ffb8c8;
+  --hl-orange-bg: rgb(255 159 10 / 0.28);
+  --hl-orange-fg: #ffd391;
+  --hl-mint-bg: rgb(99 230 226 / 0.24);
+  --hl-mint-fg: #a8f2ee;
+  --hl-blue-bg: rgb(10 132 255 / 0.3);
+  --hl-blue-fg: #b0d6ff;
+  --ne-code-bg: rgb(140 140 165 / 0.14);
+  --ne-find: rgb(255 214 10 / 0.3);
+}
+[data-hl='purple'] { --hlbg: var(--hl-purple-bg); --hlfg: var(--hl-purple-fg); }
+[data-hl='pink'] { --hlbg: var(--hl-pink-bg); --hlfg: var(--hl-pink-fg); }
+[data-hl='orange'] { --hlbg: var(--hl-orange-bg); --hlfg: var(--hl-orange-fg); }
+[data-hl='mint'] { --hlbg: var(--hl-mint-bg); --hlfg: var(--hl-mint-fg); }
+[data-hl='blue'] { --hlbg: var(--hl-blue-bg); --hlfg: var(--hl-blue-fg); }
+
+/* ------------------------------------------------------------------ document */
+.ne-root {
+  --ne-fs: 17px;
+  --ne-lh: 26px;
+  --ne-max: 720px;
+  --ne-gutter: 40px;
+  --ne-indent: 26px;
+  --ne-pad-bottom: 96px;
+  position: relative;
+  color: var(--text);
+}
+.ne-root[data-size='s'] { --ne-fs: 15px; --ne-lh: 22px; --ne-indent: 24px; }
+.ne-root[data-size='l'] { --ne-fs: 19px; --ne-lh: 29px; --ne-indent: 28px; }
+@media (max-width: 640px) { .ne-root { --ne-gutter: 16px; } }
+
+.ne-doc {
+  max-width: calc(var(--ne-max) + 2 * var(--ne-gutter));
+  margin: 0 auto;
+  padding: 4px var(--ne-gutter) var(--ne-pad-bottom);
+  font: 400 var(--ne-fs) / var(--ne-lh) var(--font-sans);
+  color: var(--text);
+  white-space: pre-wrap;
+  white-space: break-spaces;
+  word-wrap: break-word;
+  overflow-wrap: break-word;
+  font-variant-ligatures: none;
+  font-feature-settings: 'liga' 0;
+  -webkit-user-select: text;
+  user-select: text;
+  caret-color: var(--accent);
+  outline: none;
+  -webkit-tap-highlight-color: transparent;
+  overflow-anchor: none;
+}
+.ne-doc:focus,
+.ne-doc:focus-visible { outline: none; }
+.ne-doc svg { display: inline-block; }
+
+.ne-b { position: relative; margin: 0; min-height: var(--ne-lh); }
+/* Long notes: skip layout and paint of off-screen blocks (they render as soon as they scroll in,
+   get the caret or are selected). */
+.ne-root.ne-long .ne-b { content-visibility: auto; contain-intrinsic-size: auto var(--ne-lh); }
+.ne-tx { min-height: var(--ne-lh); }
+/* The placeholder is not content: no text for screen readers (the empty textbox has aria-placeholder). The
+   plain declaration first, for a browser that doesn't take alt text after "/". */
+.ne-b.is-empty > .ne-tx[data-ph]::before {
+  content: attr(data-ph);
+  content: attr(data-ph) / '';
+  float: left;
+  height: 0;
+  color: var(--text-3);
+  pointer-events: none;
+  -webkit-user-select: none;
+  user-select: none;
+}
+
+/* Title / Heading / Subheading (Apple sizes at 17px body; they scale with the text-size setting) */
+.ne-b[data-type='h1'] > .ne-tx { font: 700 calc(var(--ne-fs) * 1.647) / calc(var(--ne-fs) * 2) var(--font-display); letter-spacing: -0.02em; }
+.ne-b[data-type='h2'] > .ne-tx { font: 700 calc(var(--ne-fs) * 1.294) / calc(var(--ne-fs) * 1.647) var(--font-display); letter-spacing: -0.02em; }
+.ne-b[data-type='h3'] > .ne-tx { font: 600 calc(var(--ne-fs) * 1.059) / calc(var(--ne-fs) * 1.412) var(--font-display); letter-spacing: -0.01em; }
+.ne-b[data-type='h1'], .ne-b[data-type='h2'], .ne-b[data-type='h3'] { min-height: 0; }
+.ne-b[data-type='h1']:not(:first-child),
+.ne-b[data-type='h2']:not(:first-child),
+.ne-b[data-type='h3']:not(:first-child) { margin-top: 0.75em; }
+.ne-b[data-type='h1'] > .ne-tx { min-height: calc(var(--ne-fs) * 2); }
+.ne-b[data-type='h2'] > .ne-tx { min-height: calc(var(--ne-fs) * 1.647); }
+.ne-b[data-type='h3'] > .ne-tx { min-height: calc(var(--ne-fs) * 1.412); }
+
+/* Monostyled */
+.ne-b[data-type='code'] { margin: 6px 0; min-height: 0; }
+.ne-b[data-type='code'] > .ne-tx {
+  font: 400 calc(var(--ne-fs) * 0.882) / calc(var(--ne-fs) * 1.294) var(--font-mono);
+  min-height: calc(var(--ne-fs) * 1.294 + 20px);
+  padding: 10px 14px;
+  border-radius: 10px;
+  background: var(--ne-code-bg);
+  tab-size: 4;
+  white-space: pre-wrap;
+  overflow-wrap: anywhere;
+}
+.ne-b[data-type='code'] + .ne-b[data-type='code'] { margin-top: -2px; }
+
+/* Block Quote */
+.ne-b[data-type='quote'] { padding-left: 16px; color: var(--text-2); }
+.ne-b[data-type='quote']::before { content: ''; position: absolute; left: 1px; top: 0; bottom: 0; width: 3px; border-radius: 2px; background: color-mix(in srgb, var(--text) 16%, transparent); }
+.ne-b[data-type='quote'] + .ne-b[data-type='quote']::before { top: -1px; }
+
+/* Lists (flat items with an indent level; markers drawn here, numbers computed by the renderer). The drawn
+   markers carry alt text, so a screen reader says "Bullet" or "Dash" before the item, as it says "1." (the
+   zero-width space gives Chrome a text box to hang the alt text on; the marker itself is the background). */
+.ne-b[data-type='bullet'], .ne-b[data-type='dash'], .ne-b[data-type='num'] { padding-left: calc(var(--in, 0) * var(--ne-indent) + 28px); padding-block: 1px; }
+.ne-b[data-type='check'] { padding-left: calc(var(--in, 0) * var(--ne-indent) + 32px); padding-block: 2px; }
+.ne-b[data-type='bullet']::before {
+  content: '';
+  content: '\200B' / 'Bullet';
+  position: absolute;
+  left: calc(var(--in, 0) * var(--ne-indent) + 9px);
+  top: calc(1px + var(--ne-lh) / 2 - 3px);
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: currentColor;
+}
+.ne-b[data-type='bullet'][data-lvl='1']::before { background: transparent; box-shadow: inset 0 0 0 1.4px currentColor; }
+.ne-b[data-type='bullet'][data-lvl='2']::before { border-radius: 1.5px; width: 5.5px; height: 5.5px; }
+.ne-b[data-type='dash']::before {
+  content: '';
+  content: '\200B' / 'Dash';
+  position: absolute;
+  left: calc(var(--in, 0) * var(--ne-indent) + 6px);
+  top: calc(1px + var(--ne-lh) / 2 - 0.8px);
+  width: 11px;
+  height: 1.6px;
+  border-radius: 1px;
+  background: currentColor;
+}
+.ne-b[data-type='num']::before {
+  content: attr(data-marker);
+  position: absolute;
+  right: calc(100% - var(--in, 0) * var(--ne-indent) - 24px);
+  top: 1px;
+  color: var(--text-2);
+  font-variant-numeric: tabular-nums;
+  white-space: nowrap;
+}
+
+/* Checklists (Apple: a calm grey when checked, never struck through) */
+.ne-ck {
+  position: absolute;
+  left: calc(var(--in, 0) * var(--ne-indent));
+  top: calc(2px + (var(--ne-lh) - 22px) / 2);
+  width: 22px;
+  height: 22px;
+  cursor: pointer;
+  border-radius: 50%;
+  -webkit-user-select: none;
+  user-select: none;
+  touch-action: manipulation;
+}
+.ne-ck::after { content: ''; position: absolute; inset: -8px; border-radius: 50%; } /* a 38px hit area */
+.ne-ck-svg { display: block; width: 22px; height: 22px; overflow: visible; }
+/* --text-3: the unchecked ring is the only sign of the control, so it keeps 3:1 against the page. */
+.ne-ck-ring { fill: transparent; stroke: var(--text-3); stroke-width: 1.6; transition: fill 180ms var(--ease-out), stroke 180ms var(--ease-out); }
+.ne-ck-tick { fill: none; stroke: var(--on-accent); stroke-width: 2.4; stroke-linecap: round; stroke-linejoin: round; stroke-dasharray: 1; stroke-dashoffset: 1; }
+/* --accent-fill: the fill behind an --on-accent tick (ui.css), the same "done" circle as Tasks' .check. */
+.ne-b[data-checked='true'] .ne-ck-ring { fill: var(--accent-fill); stroke: var(--accent-fill); }
+.ne-b[data-checked='true'] .ne-ck-tick { stroke-dashoffset: 0; }
+.ne-b[data-checked='true'] > .ne-tx { color: var(--text-3); }
+.ne-b[data-type='check'] > .ne-tx { transition: color 220ms var(--ease-out); }
+@media (hover: hover) { .ne-doc[contenteditable='true'] .ne-ck:hover .ne-ck-ring { stroke: var(--accent); } }
+.ne-doc[contenteditable='false'] .ne-ck { cursor: default; }
+.ne-b.ne-checked-now .ne-ck-svg { animation: ne-check-pop 300ms var(--ease-spring); }
+.ne-b.ne-checked-now .ne-ck-tick { animation: ne-tick 180ms var(--ease-out) 60ms backwards; }
+@keyframes ne-check-pop { 0% { transform: scale(0.85); } 60% { transform: scale(1.06); } 100% { transform: none; } }
+@keyframes ne-tick { from { stroke-dashoffset: 1; } to { stroke-dashoffset: 0; } }
+.ne-b.ne-morph-check .ne-ck-svg { animation: ne-spring-in 300ms var(--ease-spring); }
+@keyframes ne-spring-in { from { transform: scale(0.6); opacity: 0.2; } to { transform: none; opacity: 1; } }
+.ne-b[data-type='bullet'], .ne-b[data-type='dash'], .ne-b[data-type='num'], .ne-b[data-type='check'] { touch-action: pan-y; }
+
+/* A checklist item linked to a task: live date (and repeat) after the text */
+.ne-taskmeta {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  margin-left: 8px;
+  padding: 0 7px;
+  height: 20px;
+  border-radius: 6px;
+  vertical-align: 1px;
+  background: var(--fill);
+  color: var(--text-2);
+  font: 500 12px/20px var(--font-sans);
+  white-space: nowrap;
+  cursor: pointer;
+  -webkit-user-select: none;
+  user-select: none;
+}
+.ne-taskmeta:hover { background: var(--fill-2); }
+.ne-taskmeta .ne-i { width: 12px; height: 12px; }
+.ne-taskdate.overdue { color: var(--danger-text); }
+
+/* Divider */
+.ne-b[data-type='hr'] { min-height: 0; padding: 13px 0; cursor: default; -webkit-user-select: none; user-select: none; }
+.ne-rule { height: 1px; background: var(--separator); }
+
+/* ------------------------------------------------------------------ inline */
+.ne-doc strong { font-weight: 700; }
+.ne-doc em { font-style: italic; }
+.ne-doc u { text-decoration: underline; text-decoration-thickness: from-font; text-underline-offset: 0.16em; }
+.ne-doc s { text-decoration: line-through; text-decoration-thickness: from-font; }
+.ne-doc u s, .ne-doc s u { text-decoration: underline line-through; }
+.ne-doc code { font-family: var(--font-mono); font-size: 0.86em; padding: 0.08em 0.32em; border-radius: 5px; background: var(--ne-code-bg); -webkit-box-decoration-break: clone; box-decoration-break: clone; }
+.ne-b[data-type='code'] code { padding: 0; background: none; font-size: inherit; }
+mark.ne-hl {
+  color: var(--hlfg);
+  background: linear-gradient(var(--hlbg), var(--hlbg)) no-repeat 0 0 / 100% 100%;
+  border-radius: 3px;
+  padding: 0.04em 0.06em;
+  margin: 0 -0.06em;
+  -webkit-box-decoration-break: clone;
+  box-decoration-break: clone;
+}
+mark.ne-hl.ne-sweep { animation: ne-sweep 220ms var(--ease-out) both; }
+@keyframes ne-sweep { from { background-size: 0% 100%; } to { background-size: 100% 100%; } }
+.ne-hlfade { position: absolute; border-radius: 3px; pointer-events: none; }
+.ne-doc a.ne-link {
+  color: var(--accent-text);
+  text-decoration: underline;
+  text-decoration-color: color-mix(in srgb, var(--accent) 42%, transparent);
+  text-decoration-thickness: from-font;
+  text-underline-offset: 0.18em;
+  cursor: text;
+}
+/* Links to notes (words linked by id, and note chips) are underlined like URL links: colour alone doesn't
+   set them apart from the text around them (WCAG 1.4.1). Hover makes the line solid. */
+.ne-doc a.ne-ref {
+  color: var(--accent-text);
+  text-decoration: underline;
+  text-decoration-color: color-mix(in srgb, var(--accent) 45%, transparent);
+  text-decoration-thickness: from-font;
+  text-underline-offset: 0.18em;
+  cursor: text;
+}
+.ne-doc[contenteditable='false'] a.ne-link, .ne-doc[contenteditable='false'] a.ne-ref { cursor: pointer; }
+
+/* Chips: note · task · event · date. A chip that wraps keeps its padding and rounded fill on each line
+   (box-decoration-break), and its glyph stays with the word next to it (.ne-nb, render.js). */
+.ne-chip { cursor: pointer; border-radius: 6px; -webkit-user-select: all; user-select: all; transition: background var(--dur-fast); -webkit-box-decoration-break: clone; box-decoration-break: clone; }
+.ne-nb, .ne-chip-day { white-space: nowrap; }
+.ne-chip-note {
+  color: var(--accent-text);
+  font-weight: 500;
+  text-decoration: underline;
+  text-decoration-color: color-mix(in srgb, var(--accent) 45%, transparent);
+  text-decoration-thickness: from-font;
+  text-underline-offset: 0.18em;
+}
+.ne-chip-note:hover, .ne-doc a.ne-ref:hover { text-decoration-color: currentColor; }
+.ne-chip-task, .ne-chip-event, .ne-chip-day { padding: 0.05em 0.42em 0.05em 0.3em; background: var(--fill); color: var(--text); }
+.ne-chip-task:hover, .ne-chip-event:hover, .ne-chip-day:hover { background: var(--fill-2); }
+.ne-chip .ne-i { vertical-align: -0.14em; }
+.ne-chip-ic { width: 0.85em; height: 0.85em; margin-right: 0.28em; color: var(--text-2); }
+.ne-chip-rep { width: 0.75em; height: 0.75em; margin-left: 0.25em; color: var(--text-3); }
+.ne-chip-bar { display: inline-block; width: 3px; height: 0.95em; margin-right: 0.36em; border-radius: 2px; background: var(--accent); vertical-align: -0.12em; }
+.ne-tc { display: inline-block; width: 0.95em; height: 0.95em; margin-right: 0.3em; vertical-align: -0.12em; cursor: pointer; }
+.ne-tc-svg { display: block; width: 100%; height: 100%; }
+.ne-tc-svg circle { fill: transparent; stroke: var(--text-3); stroke-width: 2; }
+.ne-tc-svg.done circle { fill: var(--accent-fill); stroke: var(--accent-fill); }
+.ne-tc-svg path { fill: none; stroke: var(--on-accent); stroke-width: 2.6; stroke-linecap: round; stroke-linejoin: round; }
+.ne-chip.ne-done .ne-chip-t { color: var(--text-3); }
+.ne-chip.ne-missing, .ne-chip.ne-missing .ne-chip-t { color: var(--text-3); text-decoration: line-through; }
+.ne-chip-hl { background: var(--hlbg); }
+
+/* Tags, unresolved [[links]] and find (CSS Custom Highlight API: no DOM changes) */
+::highlight(ne-tag) { color: var(--accent-text); }
+::highlight(ne-wiki) { color: color-mix(in srgb, var(--accent-text) 62%, var(--text-3)); text-decoration: underline dotted; text-decoration-color: color-mix(in srgb, var(--accent) 45%, transparent); }
+::highlight(ne-find) { background-color: var(--ne-find); }
+::highlight(ne-find-cur) { background-color: var(--ne-find-cur); color: #1a1400; }
+
+/* ------------------------------------------------------------------ delight */
+.ne-b.ne-flash { isolation: isolate; }
+.ne-b.ne-flash::after {
+  content: '';
+  position: absolute;
+  inset: -2px -10px;
+  z-index: -1;
+  border-radius: 8px;
+  background: var(--accent-softer);
+  box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--accent) 14%, transparent);
+  pointer-events: none;
+  animation: ne-flash 900ms var(--ease-out) forwards;
+}
+@keyframes ne-flash { 0% { opacity: 0; } 14% { opacity: 1; } 62% { opacity: 1; } 100% { opacity: 0; } }
+.ne-b.ne-findpulse { animation: ne-pulse 520ms var(--ease-out); }
+@keyframes ne-pulse { 0% { transform: none; } 35% { transform: scale(1.012); } 100% { transform: none; } }
+.ne-ghost { position: absolute; z-index: 2; white-space: pre; color: var(--text-3); font-family: var(--font-sans); line-height: var(--ne-lh); pointer-events: none; transform-origin: left center; }
+.ne-b.ne-dragging { opacity: 0.35; }
+.ne-b.ne-lifted { transform: scale(1.015); border-radius: 8px; background: var(--surface-2); box-shadow: var(--shadow-2); transition: transform 160ms var(--ease-out), box-shadow 160ms; }
+
+.ne-overlay { position: absolute; inset: 0; pointer-events: none; }
+.ne-grip {
+  position: absolute;
+  left: 0;
+  top: 0;
+  width: 20px;
+  height: 24px;
+  display: grid;
+  place-items: center;
+  border-radius: 5px;
+  color: var(--text-3);
+  opacity: 0;
+  pointer-events: none;
+  cursor: grab;
+  transition: opacity 120ms var(--ease-out), background var(--dur-fast);
+}
+.ne-grip.on { opacity: 1; pointer-events: auto; }
+.ne-grip:hover { background: var(--hover); color: var(--text-2); }
+.ne-grip:active { cursor: grabbing; }
+.ne-dropline { position: absolute; left: 0; top: 0; height: 2px; border-radius: 1px; background: var(--accent); opacity: 0; transition: opacity 80ms; }
+.ne-dropline.on { opacity: 1; }
+@media (hover: none) { .ne-grip { display: none; } }
+
+/* ------------------------------------------------------------------ floating UI */
+.ne-tb-btn {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 2px;
+  min-width: 32px;
+  height: 32px;
+  padding: 0 6px;
+  border-radius: 8px;
+  color: var(--text-2);
+  flex: none;
+  transition: background var(--dur-fast), color var(--dur-fast), transform var(--dur-fast);
+}
+.ne-tb-btn:hover { background: var(--hover); color: var(--text); }
+.ne-tb-btn:active { transform: scale(0.94); }
+.ne-tb-btn[aria-pressed='true'] { color: var(--accent-text); background: var(--accent-soft); }
+.ne-tb-btn[disabled] { opacity: 0.35; pointer-events: none; }
+.ne-tb-btn .ne-i { width: 18px; height: 18px; display: block; }
+.ne-tb-btn .ne-tb-chev { width: 12px; height: 12px; color: var(--text-3); }
+.ne-tb-sep { width: 1px; height: 20px; margin: 0 4px; background: var(--separator); flex: none; }
+.ne-tb-txt { font-size: 13px; font-weight: 500; white-space: nowrap; }
+
+.ne-seltb {
+  position: fixed;
+  z-index: 72;
+  left: 0;
+  top: 0;
+  display: flex;
+  align-items: center;
+  gap: 2px;
+  padding: 4px;
+  border-radius: 12px;
+  background: var(--surface-2);
+  box-shadow: var(--shadow-pop);
+  animation: pop-in 140ms var(--ease-out);
+}
+[data-theme='dark'] .ne-seltb, [data-theme='dim'] .ne-seltb { background: var(--surface-3); }
+.ne-tb-type { padding: 0 6px 0 10px; color: var(--text); }
+.ne-tb-type .ne-tb-txt { min-width: 64px; text-align: left; }
+.ne-tb-hl { padding-right: 4px; }
+.ne-hlbar { position: absolute; left: 8px; width: 16px; bottom: 4px; height: 3px; border-radius: 2px; background: var(--hlfg); opacity: 0.85; }
+
+.ne-swpop { padding: 6px; min-width: 0; z-index: 73; }
+.ne-swatches { display: flex; align-items: center; gap: 4px; }
+.ne-swatches.compact { justify-content: space-between; padding: 8px 2px 2px; }
+.ne-sw { width: 34px; height: 34px; border-radius: 50%; display: grid; place-items: center; transition: transform var(--dur-fast); }
+.ne-sw:hover { transform: scale(1.06); }
+.ne-sw-dot { position: relative; display: grid; place-items: center; width: 26px; height: 26px; border-radius: 50%; background: var(--hlbg); color: var(--hlfg); font: 700 12px/1 var(--font-sans); }
+.ne-sw[aria-pressed='true'] .ne-sw-dot { box-shadow: 0 0 0 2px var(--surface-2), 0 0 0 4px var(--accent); }
+.ne-sw-none .ne-sw-dot { background: transparent; box-shadow: inset 0 0 0 1.5px var(--text-3); }
+.ne-sw-none .ne-sw-dot::after { content: ''; position: absolute; width: 1.5px; height: 18px; border-radius: 1px; background: var(--text-3); transform: rotate(45deg); }
+.ne-sw-none[aria-pressed='true'] .ne-sw-dot { box-shadow: inset 0 0 0 1.5px var(--text-3), 0 0 0 2px var(--surface-2), 0 0 0 4px var(--accent); }
+
+/* Aa format panel. Docked on the phone's keyboard bar it sits flush on it, a sheet with rounded top
+   corners only, so the note never shows through a gap. */
+.ne-aa { width: 404px; max-width: calc(100vw - 16px); padding: 10px 12px 12px; z-index: 72; }
+.ne-aa.docked,
+.ne-pop.ne-pop-sheet {
+  width: min(520px, 100vw);
+  max-width: none;
+  right: auto;
+  border-radius: 16px 16px 0 0;
+  box-shadow: 0 0 0 0.5px var(--separator), 0 -10px 28px rgb(16 18 40 / 0.12);
+  animation: ne-sheet-up 180ms var(--ease-out);
+}
+@keyframes ne-sheet-up { from { transform: translateY(12px); opacity: 0; } to { transform: none; opacity: 1; } }
+.ne-aa-head { display: flex; align-items: center; justify-content: space-between; margin: -2px -4px 6px 2px; }
+.ne-aa-title { font: var(--t-headline); }
+.ne-aa-x { min-width: 28px; height: 28px; border-radius: 50%; background: var(--fill); }
+.ne-aa-styles { display: flex; gap: 4px; overflow-x: auto; scrollbar-width: none; padding-bottom: 2px; scroll-padding-inline: 28px; }
+.ne-aa-styles::-webkit-scrollbar { display: none; }
+.ne-aa-style { flex: none; height: 40px; padding: 0 8px; border-radius: 10px; color: var(--text); white-space: nowrap; transition: background var(--dur-fast), color var(--dur-fast); }
+.ne-aa-style:hover { background: var(--hover); }
+.ne-aa-style[aria-checked='true'] { background: var(--accent-soft); color: var(--accent-text); }
+/* The row scrolls, and a scroller clips what is outside it: the focus ring sits inside the button, as on
+   ui.css's other clipped rows (.group button.item, .switcher-app). */
+.ne-aa-style:focus-visible { outline-offset: -2px; }
+.ne-aa-h1 { font: 700 18px/1 var(--font-display); letter-spacing: -0.02em; }
+.ne-aa-h2 { font: 700 15.5px/1 var(--font-display); }
+.ne-aa-h3 { font: 600 14px/1 var(--font-display); }
+.ne-aa-p { font: 400 14px/1 var(--font-sans); }
+.ne-aa-code { font: 400 13px/1 var(--font-mono); }
+.ne-aa-line { display: flex; gap: 8px; margin-top: 8px; }
+.ne-aa-seg { display: flex; flex: 1; gap: 2px; padding: 2px; border-radius: 10px; background: var(--fill); }
+.ne-aa-seg .ne-tb-btn { flex: 1; height: 36px; }
+.ne-aa-ind { flex: 0 0 auto; }
+.ne-aa-ind .ne-tb-btn { min-width: 44px; }
+
+/* Phone keyboard accessory bar (positioned from visualViewport) */
+.ne-acc {
+  position: fixed;
+  z-index: 66;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  display: flex;
+  align-items: center;
+  height: calc(46px + env(safe-area-inset-bottom, 0px));
+  padding: 0 4px env(safe-area-inset-bottom, 0px);
+  background: var(--material);
+  -webkit-backdrop-filter: var(--blur);
+  backdrop-filter: var(--blur);
+  box-shadow: 0 -0.5px 0 var(--separator);
+  will-change: transform;
+}
+/* The 8 tools share the strip (all fit from 360px up); narrower screens scroll it, with an edge fade. */
+.ne-acc-strip { display: flex; align-items: center; justify-content: space-between; gap: 2px; flex: 1; min-width: 0; max-width: 560px; margin-right: 4px; overflow-x: auto; scrollbar-width: none; -webkit-overflow-scrolling: touch; }
+.ne-acc-strip::-webkit-scrollbar { display: none; }
+/* A row that scrolls (the keyboard bar, the Aa style row) fades at the edge with more beyond it (data-fade). */
+.ne-acc-strip[data-fade='end'], .ne-aa-styles[data-fade='end'] { -webkit-mask-image: linear-gradient(to right, #000 calc(100% - 28px), transparent); mask-image: linear-gradient(to right, #000 calc(100% - 28px), transparent); }
+.ne-acc-strip[data-fade='start'], .ne-aa-styles[data-fade='start'] { -webkit-mask-image: linear-gradient(to left, #000 calc(100% - 28px), transparent); mask-image: linear-gradient(to left, #000 calc(100% - 28px), transparent); }
+.ne-acc-strip[data-fade='both'], .ne-aa-styles[data-fade='both'] { -webkit-mask-image: linear-gradient(to right, transparent, #000 28px, #000 calc(100% - 28px), transparent); mask-image: linear-gradient(to right, transparent, #000 28px, #000 calc(100% - 28px), transparent); }
+.ne-acc .ne-tb-btn { min-width: 42px; height: 40px; border-radius: 10px; }
+.ne-acc-strip .ne-tb-btn { flex: 1 1 0; min-width: 36px; max-width: 52px; padding: 0 4px; }
+.ne-acc .ne-tb-btn .ne-i { width: 21px; height: 21px; }
+.ne-acc-aa { color: var(--text); }
+.ne-acc-hide { margin-left: auto; }
+.ne-acc-hide::before { content: ''; position: absolute; left: -2px; top: 10px; bottom: 10px; width: 1px; background: var(--separator); }
+
+/* Suggestion list (slash menu, [[ picker, #tags, @dates) */
+.ne-pop { z-index: 72; width: 300px; max-height: min(340px, calc(100dvh - 24px)); padding: 6px; }
+.ne-pop .menu-label { padding-top: 6px; }
+.ne-opt { gap: 10px; min-height: 38px; padding: 4px 8px; cursor: pointer; }
+.ne-opt.hl { background: var(--hover); }
+.ne-opt-ic { display: grid; place-items: center; flex: none; width: 28px; height: 28px; border-radius: 8px; background: var(--fill); color: var(--text-2); }
+.ne-opt-ic .ne-i { width: 17px; height: 17px; display: block; }
+.ne-opt-main { display: flex; flex-direction: column; min-width: 0; }
+.ne-opt-label { font-size: 14px; }
+.ne-opt-sub { font-size: 12px; line-height: 15px; color: var(--text-3); }
+.ne-opt-hint { margin-left: auto; padding-left: 10px; color: var(--text-3); font: 500 12px/1 var(--font-mono); white-space: nowrap; flex: none; }
+/* Monospace is for Markdown hints ("##", "[]"); a date ("Mon, Nov 23", "In 5 days") is plain text. */
+.ne-pop[data-kind='date'] .ne-opt-hint { font: 400 12px/1 var(--font-sans); }
+.ne-pop-empty { padding: 10px 12px; color: var(--text-3); font-size: 13px; }
+.ne-pop-sheet { max-height: 50dvh; }
+
+/* Link card, link field, note picker, chip card */
+.ne-linkcard { display: flex; align-items: center; gap: 2px; min-width: 0; max-width: min(400px, calc(100vw - 24px)); padding: 4px; z-index: 71; }
+.ne-lc-open { display: flex; align-items: center; gap: 10px; min-width: 0; max-width: 300px; padding: 4px 10px 4px 8px; border-radius: 8px; color: var(--text); text-align: left; }
+.ne-lc-open:hover { background: var(--hover); }
+.ne-lc-open > .ne-i { color: var(--text-2); width: 16px; height: 16px; }
+.ne-lc-text { display: flex; flex-direction: column; min-width: 0; }
+.ne-lc-host { font: 600 13px/17px var(--font-sans); }
+.ne-lc-url { font: 400 12px/15px var(--font-sans); color: var(--text-3); }
+.ne-lf-pop { width: 360px; max-width: calc(100vw - 16px); padding: 8px; z-index: 73; }
+.ne-lf-row { display: flex; gap: 6px; align-items: center; }
+.ne-lf-row .input { height: 34px; }
+.ne-lf-err { margin: 6px 4px 2px; font-size: 12px; color: var(--danger-text); }
+.ne-lf-pop .menu-item { margin-top: 4px; }
+.ne-np { width: 340px; max-width: calc(100vw - 16px); padding: 8px; z-index: 73; }
+.ne-np-input { height: 34px; }
+.ne-chipcard { width: 290px; padding: 12px; z-index: 71; }
+.ne-cc-head { display: flex; align-items: center; gap: 10px; }
+.ne-cc-ic { color: var(--text-2); width: 18px; height: 18px; flex: none; }
+.ne-cc-text { display: flex; flex-direction: column; min-width: 0; }
+.ne-cc-title { font: 600 14px/19px var(--font-sans); }
+.ne-cc-sub { font: 400 12px/16px var(--font-sans); color: var(--text-3); }
+.ne-cc-task { width: 22px; height: 22px; flex: none; }
+.ne-cc-task .ne-tc-svg circle { stroke-width: 1.8; }
+.ne-cc-missing { margin: 8px 0 0; font-size: 12px; color: var(--text-3); }
+.ne-cc-preview { margin: 8px 0 0; font: 400 13px/18px var(--font-sans); color: var(--text-2); display: -webkit-box; -webkit-line-clamp: 3; -webkit-box-orient: vertical; overflow: hidden; white-space: pre-line; }
+.ne-cc-actions { display: flex; justify-content: flex-end; gap: 8px; margin-top: 10px; }
+
+/* ------------------------------------------------------------------ Windows Contrast themes (forced colours)
+   Backgrounds, gradients and shadows are dropped there. Highlights take the system Mark colours (the gradient
+   highlight would leave black text on the black page), drawn markers (bullets, dashes, the quote bar) and
+   checked circles keep a visible system colour, chips and links read as links, and states get an edge. */
+@media (forced-colors: active) {
+  mark.ne-hl, .ne-chip-hl { forced-color-adjust: none; background: Mark; color: MarkText; }
+  ::highlight(ne-find) { background-color: Mark; color: MarkText; }
+  ::highlight(ne-find-cur) { background-color: Highlight; color: HighlightText; }
+  ::highlight(ne-tag) { color: LinkText; }
+  .ne-b[data-type='bullet']::before, .ne-b[data-type='dash']::before, .ne-b[data-type='quote']::before { forced-color-adjust: none; background: CanvasText; }
+  .ne-b[data-type='bullet'][data-lvl='1']::before { background: transparent; box-shadow: inset 0 0 0 1.4px CanvasText; }
+  .ne-b[data-type='num']::before { color: CanvasText; }
+  .ne-b[data-type='code'] > .ne-tx, .ne-doc code { border: 1px solid GrayText; }
+  .ne-b[data-type='code'] code { border: 0; }
+  .ne-chip-note, .ne-doc a.ne-ref, .ne-doc a.ne-link { color: LinkText; }
+  .ne-chip-task, .ne-chip-event, .ne-chip-day, .ne-taskmeta { border: 1px solid LinkText; color: LinkText; }
+  .ne-chip.ne-missing, .ne-chip.ne-missing .ne-chip-t, .ne-b[data-checked='true'] > .ne-tx { color: GrayText; }
+  .ne-ck-svg, .ne-tc-svg { forced-color-adjust: none; }
+  .ne-ck-ring, .ne-tc-svg circle { stroke: CanvasText; }
+  .ne-b[data-checked='true'] .ne-ck-ring, .ne-tc-svg.done circle { fill: Highlight; stroke: Highlight; }
+  .ne-ck-tick, .ne-tc-svg path { stroke: HighlightText; }
+  .ne-seltb { border: 1px solid CanvasText; }
+  .ne-acc { border-top: 1px solid CanvasText; }
+  .ne-tb-btn[aria-pressed='true'], .ne-aa-style[aria-checked='true'] { outline: 2px solid Highlight; outline-offset: -2px; }
+  .ne-tb-btn[disabled] { opacity: 1; color: GrayText; }
+  .ne-sw-dot { forced-color-adjust: none; box-shadow: inset 0 0 0 1px CanvasText; }
+  .ne-sw[aria-pressed='true'] { outline: 3px solid Highlight; outline-offset: 0; }
+  .ne-dropline { forced-color-adjust: none; background: Highlight; }
+}
+
+/* ------------------------------------------------------------------ motion & print */
+@media (prefers-reduced-motion: reduce) {
+  .ne-b, .ne-b *, .ne-seltb, .ne-pop, .ne-aa, mark.ne-hl { animation: none !important; transition: none !important; }
+}
+[data-reduce-motion='true'] .ne-b,
+[data-reduce-motion='true'] .ne-b *,
+[data-reduce-motion='true'] .ne-seltb,
+[data-reduce-motion='true'] .ne-pop,
+[data-reduce-motion='true'] .ne-aa,
+[data-reduce-motion='true'] mark.ne-hl { animation: none !important; transition: none !important; }
+
+@media print {
+  .ne-seltb, .ne-acc, .ne-pop, .ne-aa, .ne-overlay, .ne-linkcard, .ne-chipcard { display: none !important; }
+  .ne-doc { padding: 0; max-width: none; }
+  .ne-b[data-checked='true'] > .ne-tx { color: #6e6e80; }
+}

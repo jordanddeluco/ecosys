@@ -1,15 +1,49 @@
 {
+  "id": "./",
   "name": "ecosys",
   "short_name": "ecosys",
-  "description": "A small ecosystem of personal apps that work together.",
+  "description": "Tasks, Schedule, Notes and your AI assistants, one click away.",
+  "lang": "en",
+  "dir": "ltr",
   "start_url": "./",
   "scope": "./",
   "display": "standalone",
+  "orientation": "any",
   "background_color": "#000000",
   "theme_color": "#000000",
-  "icons": [{ "src": "shared/icons/ecosys.svg", "sizes": "any", "type": "image/svg+xml", "purpose": "any maskable" }],
+  "categories": ["productivity", "utilities"],
+  "icons": [
+    { "src": "shared/icons/ecosys.svg", "sizes": "any", "type": "image/svg+xml", "purpose": "any" },
+    { "src": "shared/icons/ecosys-maskable.svg", "sizes": "any", "type": "image/svg+xml", "purpose": "maskable" }
+  ],
   "shortcuts": [
-    { "name": "Tasks", "url": "tasks/" },
-    { "name": "Schedule", "url": "schedule/" }
+    {
+      "name": "Today's tasks",
+      "short_name": "Today",
+      "description": "What's due today",
+      "url": "tasks/#/today",
+      "icons": [{ "src": "shared/icons/tasks.svg", "sizes": "any", "type": "image/svg+xml" }]
+    },
+    {
+      "name": "Schedule",
+      "short_name": "Schedule",
+      "description": "Your calendar",
+      "url": "schedule/",
+      "icons": [{ "src": "shared/icons/schedule.svg", "sizes": "any", "type": "image/svg+xml" }]
+    },
+    {
+      "name": "Notes",
+      "short_name": "Notes",
+      "description": "Ideas, lists and meeting notes",
+      "url": "notes/",
+      "icons": [{ "src": "shared/icons/notes.svg", "sizes": "any", "type": "image/svg+xml" }]
+    },
+    {
+      "name": "Quick note",
+      "short_name": "Quick note",
+      "description": "Jot something down",
+      "url": "notes/#/quick",
+      "icons": [{ "src": "shared/icons/notes.svg", "sizes": "any", "type": "image/svg+xml" }]
+    }
   ]
 }

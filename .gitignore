@@ -6,3 +6,6 @@ desktop.ini
 .vscode/
 .idea/
 .claude/settings.local.json
+
+# Your ecosys data, AI connection keys and backups (local server). Never commit this.
+.ecosys/

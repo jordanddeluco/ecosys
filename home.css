@@ -1,0 +1,298 @@
+/* ecosys Home: the app launcher. Large app icons with their names beneath, centred on a soft backdrop under
+   the date and a greeting (the classic iCloud.com home page). Light is iCloud's airy lavender, Dim is
+   proton.me's deep violet, Lights out is X's true black with only a faint accent glow at the top, as in the
+   other apps. The icons are the app logos (shared/shell.js appIcon()) and sit straight on the backdrop, with no
+   cards or glass: a soft lavender shadow in Light, a glow in each logo's own colour and a lit edge in Dim and
+   Lights out. The backdrop's glows follow the accent colour; everything else comes from shared/ui.css tokens. */
+
+/* ------------------------------------------------------------------ page tokens */
+html.home-page {
+  --home-max: 1120px;
+  --home-gutter: 28px;
+  --icon: 96px; /* a launcher icon */
+  --icon-r: 24%;
+  --cell: 128px; /* its column */
+  --gap: 32px; /* between the columns */
+}
+html.home-page[data-theme='light'],
+html.home-page:not([data-theme]) {
+  --bg: #f4f3fb; /* also the browser's theme-color (shell.js applyTheme reads --bg) */
+  --home-base: linear-gradient(180deg, #f9f8fe 0%, #f2f1fb 50%, #eeedf8 100%);
+  --home-glow-1: color-mix(in srgb, var(--accent) 22%, transparent);
+  --home-glow-2: rgb(255 164 212 / 0.36);
+  --home-glow-3: rgb(132 192 255 / 0.36);
+  --home-bar: rgb(246 245 252 / 0.76);
+  --home-sep: rgb(46 36 120 / 0.09);
+  --home-well: rgb(46 36 120 / 0.04);
+  --search-bg: rgb(255 255 255 / 0.66);
+  --search-bg-hover: rgb(255 255 255 / 0.92);
+}
+/* Lights out: black like Tasks, Schedule and Notes (ui.css). */
+html.home-page[data-theme='dark'] {
+  --bg: #000000;
+  --home-base: #000000;
+  --home-glow-1: color-mix(in srgb, var(--accent) 16%, transparent);
+  --home-glow-2: transparent;
+  --home-glow-3: transparent;
+  --home-bar: rgb(0 0 0 / 0.72);
+  --home-sep: rgb(255 255 255 / 0.08);
+  --home-well: rgb(255 255 255 / 0.045);
+  --search-bg: rgb(255 255 255 / 0.06);
+  --search-bg-hover: rgb(255 255 255 / 0.1);
+}
+html.home-page[data-theme='dim'] {
+  --bg: #15162d;
+  --home-base: linear-gradient(180deg, #1d1c3d 0%, #17182f 45%, #121327 100%);
+  --home-glow-1: color-mix(in srgb, var(--accent) 32%, transparent);
+  --home-glow-2: rgb(190 90 230 / 0.15);
+  --home-glow-3: rgb(80 120 255 / 0.12);
+  --home-bar: rgb(21 22 45 / 0.76);
+  --home-sep: rgb(255 255 255 / 0.09);
+  --home-well: rgb(255 255 255 / 0.05);
+  --search-bg: rgb(255 255 255 / 0.07);
+  --search-bg-hover: rgb(255 255 255 / 0.12);
+}
+
+/* The gradient sits on a fixed layer so scrolling never repaints it. */
+.home-page body { background: var(--bg); }
+.home-page body::before {
+  content: '';
+  position: fixed;
+  inset: 0;
+  z-index: -1;
+  pointer-events: none;
+  background:
+    radial-gradient(52vmax 38vmax at 10% -8%, var(--home-glow-1), transparent 70%),
+    radial-gradient(42vmax 34vmax at 100% 2%, var(--home-glow-2), transparent 70%),
+    radial-gradient(64vmax 42vmax at 45% 112%, var(--home-glow-3), transparent 70%),
+    var(--home-base);
+}
+
+/* The page root (by id: a generic .home class also matched shared/ai.js markup and stretched it). */
+#home { position: relative; min-height: 100dvh; display: flex; flex-direction: column; }
+.home-wrap {
+  width: 100%;
+  max-width: calc(var(--home-max) + 2 * var(--home-gutter));
+  margin: 0 auto;
+  padding-left: max(var(--home-gutter), env(safe-area-inset-left));
+  padding-right: max(var(--home-gutter), env(safe-area-inset-right));
+}
+
+/* ------------------------------------------------------------------ header */
+.home-bar { position: sticky; top: 0; z-index: 20; padding-top: env(safe-area-inset-top); transition: background var(--dur) var(--ease-out), box-shadow var(--dur); }
+.home-bar.scrolled { background: var(--home-bar); -webkit-backdrop-filter: var(--blur); backdrop-filter: var(--blur); box-shadow: 0 1px 0 var(--home-sep); }
+.home-bar-in { display: flex; align-items: center; gap: 4px; height: 64px; }
+.home-brand { display: inline-flex; align-items: center; gap: 10px; height: 44px; padding: 0 10px 0 4px; margin-left: -4px; border-radius: 12px; color: var(--text); text-decoration: none !important; }
+.home-brand .app-icon { position: relative; width: 32px; height: 32px; border-radius: 7.5px; box-shadow: 0 4px 12px -4px rgb(18 20 32 / 0.45); }
+.home-word { font: 700 19px/1 var(--font-display); letter-spacing: -0.025em; }
+
+.home-search {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  width: 232px;
+  height: 38px;
+  padding: 0 8px 0 13px;
+  margin-right: 6px;
+  border-radius: var(--r-pill);
+  background: var(--search-bg);
+  box-shadow: inset 0 0 0 1px var(--home-sep);
+  color: var(--text-3);
+  font-size: 14px;
+  transition: background var(--dur-fast), color var(--dur-fast), box-shadow var(--dur-fast);
+}
+.home-search:hover { background: var(--search-bg-hover); color: var(--text-2); }
+.home-search > .i { flex: none; }
+.home-search-text { flex: 1; text-align: left; }
+.home-search .kbd { background: var(--home-well); }
+
+/* ------------------------------------------------------------------ date & greeting */
+/* The greeting and the apps are one group, centred a little above the middle of the page. The greeting is
+   plain type, like the apps' own headings ("Today", "All Notes"): no glow behind it in any theme. */
+.home-main {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  justify-content: safe center; /* on a short screen the page scrolls instead of cutting off the greeting */
+  padding-top: 24px;
+  padding-bottom: calc(clamp(40px, 11vh, 120px) + env(safe-area-inset-bottom));
+}
+.home-hero { text-align: center; margin-bottom: clamp(36px, 7vh, 60px); animation: home-in 640ms var(--ease-out) both; }
+.home-date { margin: 0 0 6px; font: 600 15px/20px var(--font-sans); color: var(--text-2); }
+.home-greeting {
+  margin: 0;
+  font: 700 clamp(34px, 3.6vw, 44px)/1.08 var(--font-display);
+  letter-spacing: -0.035em;
+  color: var(--text);
+  text-wrap: balance;
+}
+
+/* ------------------------------------------------------------------ the apps */
+.launch { width: 100%; }
+/* One row of up to six (home.js sets --cols); phones keep four across, like the iOS Home Screen. */
+.launch-grid {
+  display: grid;
+  grid-template-columns: repeat(var(--cols, 4), minmax(0, var(--cell)));
+  justify-content: center;
+  column-gap: var(--gap);
+  row-gap: 28px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+.launch-grid > li { display: flex; justify-content: center; min-width: 0; }
+
+.launch-app {
+  --hue: 88 86 245;
+  --hue-a: 0.75;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  width: 100%;
+  min-width: 0;
+  padding: 4px 0 2px;
+  color: var(--text);
+  text-decoration: none !important;
+  -webkit-tap-highlight-color: transparent;
+  /* A long press is a press on the icon (quick actions), never a text selection of its name. */
+  -webkit-user-select: none;
+  user-select: none;
+  animation: launch-in 620ms var(--ease-out) both;
+  animation-delay: calc(90ms + var(--i, 0) * 55ms);
+}
+/* An icon with quick actions (home.js QUICK_ACTIONS): a long press opens them, not iOS's link preview. */
+.launch-app[data-actions] { -webkit-touch-callout: none; }
+/* Each logo's own colour (the light stop of its tile in shell.js appIcon()) and how strongly it glows: orange
+   and pink carry further than blue and violet, so they glow less. */
+.launch-app[data-app='tasks'] { --hue: 29 155 240; --hue-a: 0.75; }
+.launch-app[data-app='schedule'] { --hue: 138 110 255; --hue-a: 0.8; }
+.launch-app[data-app='notes'] { --hue: 255 146 20; --hue-a: 0.6; }
+.launch-app[data-app='ai'] { --hue: 255 79 154; --hue-a: 0.7; }
+
+.launch-icon.app-icon {
+  position: relative;
+  width: var(--icon);
+  height: var(--icon);
+  border-radius: var(--icon-r);
+  box-shadow: 0 1px 2px rgb(46 36 120 / 0.08), 0 10px 22px -10px rgb(46 36 120 / 0.26), 0 14px 30px -16px rgb(var(--hue) / calc(var(--hue-a) * 0.7));
+  transition: transform 320ms var(--ease-out), box-shadow 320ms var(--ease-out), filter 120ms;
+}
+/* iOS's continuous corners where the browser can draw them (the shadow, lit edge and focus ring follow). */
+@supports (corner-shape: squircle) {
+  .launch-icon.app-icon { --icon-r: 38%; corner-shape: squircle; }
+  .launch-icon::after { corner-shape: squircle; }
+}
+[data-theme='dark'] .launch-icon.app-icon,
+[data-theme='dim'] .launch-icon.app-icon { box-shadow: 0 4px 14px -6px rgb(0 0 0 / 0.6), 0 14px 40px -14px rgb(var(--hue) / var(--hue-a)); }
+/* A lit edge on the dark backdrops (drawn over the art, which fills the icon), so even the ink Home tile keeps its
+   outline on Dim; the brand mark in the header gets the same edge. */
+[data-theme='dark'] .launch-icon::after,
+[data-theme='dim'] .launch-icon::after,
+[data-theme='dark'] .home-brand .app-icon::after,
+[data-theme='dim'] .home-brand .app-icon::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
+  box-shadow: inset 0 0 0 1px rgb(255 255 255 / 0.12), inset 0 1px 0 rgb(255 255 255 / 0.22);
+  pointer-events: none;
+}
+
+.launch-name {
+  max-width: 100%;
+  margin-top: 10px;
+  font: 500 15px/20px var(--font-sans);
+  color: var(--text);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+/* Before AI's name while AI access is read only: the lock Connect AI uses for it, the way iOS marks an app's name. */
+.launch-flag { display: inline-block; margin-right: 3px; color: var(--text-2); vertical-align: -1px; }
+.launch-flag > .i { display: block; }
+/* A second line under every name, kept even when empty so nothing shifts: AI's status lives here. */
+.launch-cap {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 5px;
+  max-width: 100%;
+  min-height: 18px;
+  margin-top: 1px;
+  font: 400 13px/18px var(--font-sans);
+  color: var(--text-3);
+  transition: opacity var(--dur) var(--ease-out);
+}
+.launch-cap:empty { opacity: 0; }
+.launch-cap[data-tone='connect'] { color: var(--accent-text); font-weight: 600; }
+.launch-cap > .i { flex: none; margin-left: -2px; }
+.launch-cap-text { min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.launch-dot { flex: none; width: 7px; height: 7px; border-radius: 50%; background: var(--success); box-shadow: 0 0 0 2.5px color-mix(in srgb, var(--success) 22%, transparent); }
+
+/* States: a lift on hover (pointers that hover only, so a tap leaves nothing behind) and while the icon's quick
+   actions are open (picked up, as on iOS), a press, and the focus ring on the icon itself. */
+.launch-app.actions-open .launch-icon { transform: translateY(-2px); box-shadow: 0 2px 4px rgb(46 36 120 / 0.08), 0 16px 30px -12px rgb(46 36 120 / 0.3), 0 20px 40px -18px rgb(var(--hue) / calc(var(--hue-a) * 0.9)); }
+[data-theme='dark'] .launch-app.actions-open .launch-icon,
+[data-theme='dim'] .launch-app.actions-open .launch-icon { box-shadow: 0 6px 18px -6px rgb(0 0 0 / 0.6), 0 18px 52px -14px rgb(var(--hue) / calc(var(--hue-a) * 1.2)); }
+@media (hover: hover) {
+  .launch-app:hover .launch-icon { transform: translateY(-2px); box-shadow: 0 2px 4px rgb(46 36 120 / 0.08), 0 16px 30px -12px rgb(46 36 120 / 0.3), 0 20px 40px -18px rgb(var(--hue) / calc(var(--hue-a) * 0.9)); }
+  [data-theme='dark'] .launch-app:hover .launch-icon,
+  [data-theme='dim'] .launch-app:hover .launch-icon { box-shadow: 0 6px 18px -6px rgb(0 0 0 / 0.6), 0 18px 52px -14px rgb(var(--hue) / calc(var(--hue-a) * 1.2)); }
+}
+/* The press dims the icon as well as shrinking it, so a tap still answers when Reduce motion stops the shrink. */
+.launch-app:active .launch-icon { transform: scale(0.95); filter: brightness(0.88); transition-duration: 120ms; }
+.launch-app:focus-visible { outline: none; }
+.launch-app:focus-visible .launch-icon { outline: 2px solid var(--focus-color); outline-offset: 3px; }
+
+@keyframes launch-in { from { opacity: 0; transform: translateY(14px) scale(0.94); } }
+@keyframes home-in { from { opacity: 0; transform: translateY(8px); } }
+
+/* ------------------------------------------------------------------ appearance menu */
+.appearance-menu .theme-dot { width: 18px; height: 18px; border-radius: 50%; flex: none; box-shadow: inset 0 0 0 1px var(--border-strong); }
+
+/* ------------------------------------------------------------------ responsive */
+@media (max-width: 860px) {
+  .home-search { width: 38px; padding: 0; justify-content: center; margin-right: 2px; background: none; box-shadow: none; color: var(--text-2); }
+  .home-search:hover { background: var(--hover); color: var(--text); }
+  .home-search > .i { width: 20px; height: 20px; } /* the size of the Appearance and Settings glyphs beside it */
+  .home-search-text, .home-search .keys { display: none; }
+}
+@media (max-width: 640px) {
+  html.home-page { --home-gutter: 16px; --icon: 64px; }
+  .home-bar-in { height: 56px; }
+  .home-date { margin-bottom: 4px; font-size: 14px; }
+  .home-greeting { font-size: 32px; }
+  /* Four across in the gutter, as on the iOS Home Screen; on a wider screen (a small tablet, a narrow window) the
+     columns stop at 96px, so the four stay one group instead of spreading to the edges. */
+  .launch-grid { grid-template-columns: repeat(4, minmax(0, 96px)); column-gap: 0; row-gap: 22px; }
+  .launch-name { margin-top: 7px; font-size: 12.5px; line-height: 16px; }
+  .launch-flag { margin-right: 2px; }
+  .launch-flag > .i { width: 11px; height: 11px; }
+  .launch-cap { gap: 4px; min-height: 16px; font-size: 12px; line-height: 16px; }
+  .launch-cap > .i { width: 12px; height: 12px; }
+}
+@media (max-width: 360px) {
+  html.home-page { --icon: 58px; } /* the smallest phones: keep air between the four icons */
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .home-hero, .launch-app { animation: none; }
+  .launch-icon.app-icon { transition: box-shadow var(--dur), filter 120ms; }
+  .launch-app:hover .launch-icon, .launch-app:active .launch-icon, .launch-app.actions-open .launch-icon { transform: none; }
+}
+[data-reduce-motion='true'] .home-hero, [data-reduce-motion='true'] .launch-app { animation: none; }
+[data-reduce-motion='true'] .launch-icon.app-icon { transition: box-shadow var(--dur), filter 120ms; }
+[data-reduce-motion='true'] .launch-app:hover .launch-icon, [data-reduce-motion='true'] .launch-app:active .launch-icon, [data-reduce-motion='true'] .launch-app.actions-open .launch-icon { transform: none; }
+
+/* No frosted glass where the system asks for less transparency: the header is the page's own colour. */
+@media (prefers-reduced-transparency: reduce) {
+  .home-bar.scrolled { background: var(--bg); -webkit-backdrop-filter: none; backdrop-filter: none; }
+}
+
+@media (forced-colors: active) {
+  .home-page body::before { display: none; }
+  .launch-icon.app-icon { outline: 1px solid CanvasText; }
+  .launch-app:focus-visible .launch-icon { outline: 2px solid Highlight; }
+}

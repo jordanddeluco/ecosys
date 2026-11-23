@@ -16,6 +16,7 @@ const calendars = [
 ];
 const task = (s, o = {}) => parse(s, { mode: 'task', now, lists, ...o });
 const event = (s, o = {}) => parse(s, { mode: 'event', now, calendars, ...o });
+const pick = (r) => ({ title: r.title, date: r.date, time: r.time });
 
 test('task: date, time, duration, list, priority, tag', () => {
   const r = task('Call mom tomorrow 6pm for 20m #Personal !! @phone');
@@ -43,9 +44,65 @@ test('task: deadline, evening, someday', () => {
   assert.equal(r.date, null);
   assert.equal(r.title, 'Renew passport');
   const e = task('Read book tonight');
-  assert.equal(e.evening, true);
+  assert.equal(e.time, '19:00');
   assert.equal(e.date, '2026-11-22');
+  assert.equal(e.title, 'Read book');
+  assert.equal('evening' in e, false);
   assert.equal(task('Plan a trip someday').someday, true);
+});
+
+test('parts of the day', () => {
+  const ev = task('Call mom in the evening');
+  assert.equal(ev.time, '18:00');
+  assert.equal(ev.title, 'Call mom');
+  assert.equal(task('Call mom this evening').date, '2026-11-22');
+  // bare words only count at the end or next to another token
+  const news = task('Read evening news');
+  assert.equal(news.time, null);
+  assert.equal(news.title, 'Read evening news');
+  assert.equal(task('Read morning paper').title, 'Read morning paper');
+  const tm = task('Call mom tomorrow morning about taxes');
+  assert.equal(tm.date, '2026-11-23');
+  assert.equal(tm.time, '09:00');
+  assert.equal(tm.title, 'Call mom about taxes');
+  const fri = task('Gym fri morning');
+  assert.equal(fri.date, '2026-11-27');
+  assert.equal(fri.time, '09:00');
+  assert.equal(fri.title, 'Gym');
+  assert.equal(task('Run tomorrow afternoon').time, '14:00');
+  // an hour without am/pm follows the part of the day; explicit am/pm wins
+  assert.equal(task('Dinner at 7 in the evening').time, '19:00');
+  assert.equal(task('Wake up at 5 in the morning').time, '05:00');
+  assert.equal(task('Call at 2 in the afternoon').time, '14:00');
+  assert.equal(task('Movie 9pm tonight').time, '21:00');
+  assert.equal(task('Movie 9pm tonight').title, 'Movie');
+  assert.equal(task('Flight 6:30am tomorrow morning').time, '06:30');
+  const drinks = event('Drinks from 7 to 9 tonight');
+  assert.equal(drinks.time, '19:00');
+  assert.equal(drinks.endTime, '21:00');
+  assert.equal(drinks.duration, 120);
+  assert.equal(drinks.title, 'Drinks');
+});
+
+test('"this morning" / "this afternoon" are today, like "tonight" and "this evening"', () => {
+  assert.deepEqual(pick(task('Meet Sam this afternoon at 3')), { title: 'Meet Sam', date: '2026-11-22', time: '15:00' });
+  assert.deepEqual(pick(task('Call the bank this morning')), { title: 'Call the bank', date: '2026-11-22', time: '09:00' });
+  assert.deepEqual(pick(task('Call mom tonight')), { title: 'Call mom', date: '2026-11-22', time: '19:00' });
+  assert.deepEqual(pick(task('Stretch in the morning')), { title: 'Stretch', date: null, time: '09:00' }, '"in the …" names no day');
+  assert.deepEqual(pick(task('Report due friday afternoon')), { title: 'Report', date: '2026-11-27', time: '14:00' });
+});
+
+test('"every morning" / "each evening" repeat daily at that part of the day', () => {
+  const w = task('Water plants every morning');
+  assert.deepEqual(pick(w), { title: 'Water plants', date: '2026-11-22', time: '09:00' });
+  assert.deepEqual(w.repeat, { freq: 'day', interval: 1 });
+  assert.equal(task('Run every evening at 7').time, '19:00');
+  assert.equal(task('Run every evening at 7').title, 'Run');
+  assert.equal(task('Journal each night').time, '21:00');
+  assert.equal(task('Walk every afternoon').time, '14:00');
+  const s = event('Standup every morning 9:30-9:45');
+  assert.deepEqual([s.time, s.endTime, s.repeat?.freq, s.title], ['09:30', '09:45', 'day', 'Standup']);
+  assert.equal(task('Read evening news').repeat, null);
 });
 
 test('relative and absolute dates', () => {
@@ -84,6 +141,11 @@ test('repeats', () => {
   assert.deepEqual(task('Water plants every other week').repeat.interval, 2);
   assert.deepEqual(task('Sync biweekly').repeat, { freq: 'week', interval: 2, days: [0] });
   assert.equal(task('Stretch daily').repeat.freq, 'day');
+  // yearly rules carry their anchor month, so moving the task doesn't move the pattern
+  assert.deepEqual(task('Renew passport yearly').repeat, { freq: 'year', interval: 1, monthDay: 22, month: 11 });
+  const b = task('Birthday dec 5 every year');
+  assert.equal(b.date, '2026-12-05');
+  assert.deepEqual(b.repeat, { freq: 'year', interval: 1, monthDay: 5, month: 12 });
 });
 
 test('event: time ranges', () => {

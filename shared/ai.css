@@ -1,0 +1,367 @@
+/* ecosys Connect AI: the panel, the connect animation and the AI status button in the apps' sidebar heads.
+   Loaded on demand by shared/ai.js. Everything is scoped to .ai-* classes and built from ui.css tokens,
+   so it follows the theme (light · dim · lights out), the accent and Reduce motion. */
+
+/* ------------------------------------------------------------------ marks, dots, spinner */
+.ai-mark, .ai-orb { display: block; flex: none; border-radius: 50%; }
+/* The ecosys orb: a flat disc in the accent's fill, lit from 11 o'clock like the app logos, with the Home e-orbit in
+   the colour that reads on that fill (white, or dark on Yellow). */
+.ai-orb-a { stop-color: color-mix(in srgb, var(--accent-fill) 84%, #fff); }
+.ai-orb-c { stop-color: color-mix(in srgb, var(--accent-fill) 84%, #000); }
+.ai-orb-g { stroke: var(--on-accent); }
+.ai-orb-d { fill: var(--on-accent); }
+.ai-you { display: grid; place-items: center; flex: none; border-radius: 50%; background: var(--fill-2); color: var(--text-2); }
+.ai-you.redo .i { transform: scaleX(-1); }
+
+.ai-dot { width: 8px; height: 8px; border-radius: 50%; flex: none; background: var(--text-4); }
+.ai-dot.on { background: var(--success); box-shadow: 0 0 0 3px color-mix(in srgb, var(--success) 20%, transparent); }
+.ai-dot.idle { background: var(--text-3); }
+.ai-dot.new { background: none; box-shadow: inset 0 0 0 1.5px var(--text-3); }
+
+.ai-spin { display: inline-block; flex: none; width: 16px; height: 16px; border-radius: 50%; border: 2px solid currentColor; border-right-color: transparent; opacity: 0.75; animation: ai-rot 750ms linear infinite; }
+.ai-spin.sm { width: 13px; height: 13px; border-width: 1.8px; }
+@keyframes ai-rot { to { transform: rotate(360deg); } }
+.ai-offscreen { position: fixed; left: -9999px; top: 0; width: 1px; height: 1px; opacity: 0; }
+.ai-sep { display: inline-block; width: 3px; height: 3px; margin: 0 6px; border-radius: 50%; background: currentColor; opacity: 0.7; vertical-align: middle; }
+
+/* ------------------------------------------------------------------ orb · beam · marks (decorative) */
+.ai-viz { --peer: var(--accent); display: flex; align-items: center; width: min(280px, 100%); }
+.ai-viz-orb { flex: none; width: 44px; height: 44px; border-radius: 50%; box-shadow: 0 6px 16px color-mix(in srgb, var(--accent) 32%, transparent); }
+.ai-viz-orb svg, .ai-viz-peer svg { width: 100%; height: 100%; }
+.ai-viz-line { position: relative; flex: 1; height: 2px; margin: 0 10px; border-radius: 2px; background: linear-gradient(90deg, var(--accent), var(--peer)); }
+.ai-viz:not(.live) .ai-viz-line { background: repeating-linear-gradient(90deg, var(--text-4) 0 5px, transparent 5px 10px); }
+.ai-viz-line i { position: absolute; inset: 0; opacity: 0; pointer-events: none; }
+.ai-viz.live .ai-viz-line i { animation: ai-flow 2.6s linear infinite; }
+.ai-viz-line i:nth-child(2) { animation-delay: 0.87s; }
+.ai-viz-line i:nth-child(3) { animation-delay: 1.73s; }
+.ai-viz-line i::before { content: ''; position: absolute; left: -3px; top: -2px; width: 6px; height: 6px; border-radius: 50%; background: #fff; box-shadow: 0 0 0 1.5px color-mix(in srgb, var(--accent) 55%, transparent), 0 0 10px 1px var(--accent); }
+@keyframes ai-flow { 0% { transform: translateX(0); opacity: 0; } 10%, 86% { opacity: 1; } 100% { transform: translateX(100%); opacity: 0; } }
+.ai-viz-peers { display: flex; flex: none; }
+.ai-viz-peer { width: 40px; height: 40px; border-radius: 50%; box-shadow: 0 0 0 3px var(--ai-card, var(--surface-1)), 0 6px 14px color-mix(in srgb, var(--peer) 28%, transparent); }
+.ai-viz-peer + .ai-viz-peer { margin-left: -12px; }
+.ai-viz-ghost { width: 40px; height: 40px; border-radius: 50%; display: grid; place-items: center; color: var(--text-3); box-shadow: inset 0 0 0 1.5px var(--text-4); }
+
+/* ------------------------------------------------------------------ the Connect AI sheet */
+.ai-panel { --ai-card: var(--surface-1); }
+[data-theme='dark'] .ai-panel, [data-theme='dim'] .ai-panel { --ai-card: var(--surface-2); }
+/* One height for every page and tab (a sheet at its large detent), so switching pages never moves the
+   sheet's edge under the push animation. The body keeps its scrollbar's place even when nothing
+   scrolls, and as much again on the left, so the content never shifts sideways between a short page
+   and a long one and stays centred in the sheet. */
+@media (min-width: 641px) {
+  .modal.ai-panel { top: 6vh; width: min(600px, calc(100vw - 32px)); height: min(860px, 88vh); max-height: min(860px, 88vh); }
+}
+@media (max-width: 640px) {
+  .modal.ai-panel { height: 92dvh; }
+}
+.ai-head { gap: 6px; padding: 0 10px 0 20px; }
+.ai-head:has(.ai-back) { padding-left: 8px; }
+/* The AI app's logo before "Connect AI", the size of an app's sidebar logo. */
+.ai-head:has(.ai-head-logo) { padding-left: 16px; }
+.ai-head .ai-head-logo { width: 28px; height: 28px; border-radius: 7px; margin-right: 4px; }
+.ai-head .ai-title { flex: 1; min-width: 0; margin: 0; font: var(--t-title2); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.ai-head .ai-title:focus-visible { outline: none; }
+
+/* Busy or unavailable controls are aria-disabled rather than disabled: they keep keyboard focus (and
+   can still be found by a screen reader) while ecosys works; clicks on them are ignored. */
+.ai-panel [aria-disabled='true'] { opacity: 0.55; cursor: default; }
+.ai-panel .btn[aria-disabled='true']:active, .ai-panel .icon-btn[aria-disabled='true']:active { transform: none; }
+/* Text that takes over focus from what it replaced ("Undone", a finished step, a new page's heading). */
+.ai-panel .ai-step:focus-visible { outline-offset: -2px; border-radius: 10px; }
+.ai-panel .ai-p[tabindex]:focus-visible { outline-offset: 3px; border-radius: 4px; }
+.ai-panel .ai-undone:focus-visible { outline-offset: 3px; border-radius: 6px; }
+.ai-panel .ai-hero-title:focus-visible { outline-offset: 3px; border-radius: 6px; }
+/* Each side is the padding plus one scrollbar's width: 10px where the scrollbar takes room (29px a side
+   on a computer), none where scrollbars float over the content. */
+.ai-body { flex: 1; padding: 0 16px 24px; overscroll-behavior: contain; scrollbar-gutter: stable both-edges; }
+@media (min-width: 641px) { .ai-body { padding: 0 19px 28px; } }
+.ai-page.enter-fwd { animation: ai-push 280ms var(--ease-out) both; }
+.ai-page.enter-back { animation: ai-pull 280ms var(--ease-out) both; }
+@keyframes ai-push { from { opacity: 0; transform: translateX(28px); } }
+@keyframes ai-pull { from { opacity: 0; transform: translateX(-28px); } }
+.ai-loading { display: grid; place-items: center; min-height: 240px; color: var(--text-3); }
+.ai-loading .ai-spin { width: 22px; height: 22px; animation: ai-rot 750ms linear infinite, ai-fade 200ms ease-out 300ms both; }
+
+/* Live pill in the sheet's head */
+.ai-live { display: inline-flex; align-items: center; gap: 6px; flex: none; height: 24px; padding: 0 10px 0 9px; border-radius: var(--r-pill); background: color-mix(in srgb, var(--success) 13%, transparent); color: var(--success-text); font: 600 12px/1 var(--font-sans); cursor: default; }
+.ai-live-dot { position: relative; width: 7px; height: 7px; border-radius: 50%; background: var(--success); }
+.ai-live-dot::after { content: ''; position: absolute; inset: 0; border-radius: 50%; background: var(--success); animation: ai-ping 2.2s var(--ease-out) infinite; }
+@keyframes ai-ping { 0% { transform: scale(1); opacity: 0.65; } 70%, 100% { transform: scale(2.8); opacity: 0; } }
+.ai-live.off { background: color-mix(in srgb, var(--warning) 14%, transparent); color: var(--warning-text); }
+
+/* Status card */
+.ai-hero { position: relative; overflow: hidden; display: flex; flex-direction: column; align-items: center; text-align: center; margin-top: 4px; padding: 26px 20px 22px; border-radius: var(--r-lg); background: var(--ai-card); }
+.ai-hero::before { content: ''; position: absolute; inset: 0; pointer-events: none; background: radial-gradient(55% 95% at 18% 0%, color-mix(in srgb, var(--accent) 15%, transparent), transparent 72%), radial-gradient(55% 95% at 82% 0%, color-mix(in srgb, var(--peer, var(--accent)) 15%, transparent), transparent 72%); }
+.ai-hero.tone-off::before { opacity: 0.4; }
+.ai-hero > * { position: relative; }
+.ai-hero-title { margin: 14px 0 3px; font: var(--t-title3); color: var(--text); text-wrap: balance; }
+.ai-hero-sub { margin: 0; max-width: 410px; font: var(--t-sub); color: var(--text-2); text-wrap: pretty; }
+.ai-hero-glyph { width: 56px; height: 56px; border-radius: 18px; display: grid; place-items: center; background: var(--fill); color: var(--text-2); }
+.ai-hero-glyph + .ai-hero-title { margin-top: 12px; }
+
+/* AI access */
+.ai-access { padding: 12px 14px; }
+.ai-access .segmented button { height: 32px; font-size: 13.5px; }
+.ai-note { margin: 10px 2px 0; font: var(--t-sub); color: var(--text-2); }
+
+/* Assistants */
+.group .ai-row { gap: 12px; min-height: 66px; padding: 10px 12px 10px 14px; }
+.group .ai-row + .ai-row::before, .group .ai-entry + .ai-entry::before { left: 64px; }
+.ai-row .grow { display: flex; flex-direction: column; gap: 1px; }
+.ai-row-name { font: var(--t-headline); color: var(--text); }
+.ai-row-sub { font: var(--t-sub); color: var(--text-3); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.ai-state { display: inline-flex; align-items: center; gap: 6px; flex: none; font-size: 13px; color: var(--text-3); white-space: nowrap; }
+.ai-state.on { color: var(--success-text); font-weight: 600; }
+.ai-state.none { color: var(--accent-text); font-weight: 600; }
+.ai-state .ai-dot { width: 7px; height: 7px; box-shadow: none; }
+.ai-chev { color: var(--text-4); margin-left: -4px; }
+.ai-foot { display: flex; justify-content: center; margin-top: 20px; }
+
+/* Activity */
+.ai-sec-head { display: flex; align-items: flex-end; gap: 12px; }
+.ai-sec-head .group-title { flex: 1; }
+.ai-sec-head .segmented { margin-bottom: 6px; }
+.segmented.ai-seg-sm { padding: 2px; }
+.segmented.ai-seg-sm button { height: 24px; padding: 0 10px; font-size: 12.5px; }
+.group .ai-entry { gap: 12px; min-height: 58px; padding: 9px 12px 9px 14px; }
+.ai-entry .grow { display: flex; flex-direction: column; gap: 2px; }
+.ai-entry-text { display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; overflow-wrap: anywhere; font: var(--t-callout); color: var(--text); }
+.ai-entry:not(.write) .ai-entry-text { color: var(--text-2); }
+.ai-entry.gone .ai-entry-text { color: var(--text-3); text-decoration: line-through; text-decoration-color: color-mix(in srgb, var(--text-3) 55%, transparent); }
+.ai-entry-meta { font: var(--t-foot); color: var(--text-3); }
+.ai-undo { flex: none; gap: 6px; }
+.ai-undone { flex: none; padding: 0 6px; font: 500 12.5px/1 var(--font-sans); color: var(--text-3); }
+.ai-empty { padding: 24px 20px; text-align: center; font: var(--t-callout); color: var(--text-3); }
+.ai-more { display: flex; margin: 8px auto 0; }
+
+/* An assistant's page */
+.ai-dhero { display: flex; align-items: center; gap: 14px; margin-top: 4px; padding: 16px; border-radius: var(--r-lg); background: var(--ai-card); }
+.ai-dline { display: flex; align-items: center; gap: 8px; margin: 0; font: var(--t-headline); color: var(--text); }
+.ai-dabout { margin: 3px 0 0; font: var(--t-sub); color: var(--text-2); }
+.ai-callout { display: flex; align-items: flex-start; gap: 10px; margin: 12px 0 0; padding: 12px 14px; border-radius: var(--r-md); background: var(--accent-softer); color: var(--text); font: var(--t-sub); }
+.ai-callout > .i { flex: none; margin-top: 1px; color: var(--accent-text); }
+.ai-callout strong { font-weight: 600; }
+.ai-callout.warn { background: color-mix(in srgb, var(--warning) 11%, transparent); }
+.ai-callout.warn > .i { color: var(--warning-text); }
+.ai-callout .ai-actions { margin-top: 10px; }
+/* A note at the foot of a setup card sits inside it, inset like the steps above. */
+.ai-setup > .ai-callout { margin: 2px 16px 16px; }
+.ai-link { padding: 0 2px; border-radius: 4px; color: var(--accent-text); font-weight: 600; }
+.ai-link:hover { text-decoration: underline; }
+
+/* Connections */
+.ai-conn { padding: 12px 14px 10px; }
+.ai-conn + .ai-conn { border-top: 1px solid var(--separator); }
+.ai-conn-head { display: flex; align-items: center; gap: 10px; margin-bottom: 6px; }
+.ai-conn-head .grow { display: flex; flex-direction: column; min-width: 0; }
+.ai-conn-name { font: var(--t-headline); color: var(--text); }
+.ai-conn-meta { font: var(--t-foot); color: var(--text-3); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.ai-add { display: flex; align-items: center; gap: 10px; width: 100%; min-height: 48px; padding: 0 14px; border-top: 1px solid var(--separator); color: var(--accent-text); font: 600 14px/1 var(--font-sans); text-align: left; transition: background var(--dur-fast); }
+.ai-add:hover { background: var(--hover); }
+.ai-add:focus-visible { outline-offset: -2px; border-radius: 0 0 var(--r-md) var(--r-md); }
+.ai-pick { display: flex; align-items: center; gap: 10px; padding: 12px 16px 2px; }
+.ai-pick-k { flex: none; font: var(--t-sub); color: var(--text-3); }
+.ai-pick-btn { min-width: 0; max-width: min(320px, 100%); }
+.ai-name .ai-name-input { margin-top: 16px; text-align: left; }
+.ai-kv { display: flex; align-items: center; gap: 10px; min-height: 40px; }
+.ai-k { flex: none; width: 52px; font: var(--t-sub); color: var(--text-3); }
+.ai-v { flex: 1; min-width: 0; display: flex; align-items: center; gap: 2px; }
+.ai-keytext { flex: 1; min-width: 0; margin-right: 4px; padding: 6px 10px; border-radius: 8px; background: var(--fill); font: 400 12.5px/18px var(--font-mono); color: var(--text); overflow-wrap: anywhere; }
+
+/* Keys: masked with drawn dots (no text glyphs), revealed on request */
+.ai-secret:not(.on) { white-space: nowrap; }
+.ai-secret.on { word-break: break-all; }
+.ai-dots { display: inline-block; width: 7.2em; height: 1em; margin-right: 0.3em; vertical-align: -0.14em; background: radial-gradient(circle at center, currentColor 0 0.17em, transparent 0.19em) 0 50% / 0.6em 1em repeat-x; opacity: 0.55; }
+.ai-ph { color: var(--text-3); font-style: italic; }
+
+/* Setup */
+.ai-tabs { margin: 0 0 10px; }
+.ai-tabs button { height: 30px; }
+.ai-tabs button[aria-selected='true'] { background: var(--seg-on); color: var(--text); font-weight: 600; box-shadow: 0 2px 6px rgb(0 0 0 / 0.1), 0 0.5px 1px rgb(0 0 0 / 0.08); }
+[data-theme='dark'] .ai-tabs button[aria-selected='true'], [data-theme='dim'] .ai-tabs button[aria-selected='true'] { box-shadow: none; }
+.ai-setup { padding: 2px 0; }
+.ai-steps { list-style: none; margin: 0; padding: 2px 16px; counter-reset: ai-step; }
+.ai-step { counter-increment: ai-step; display: grid; grid-template-columns: 26px minmax(0, 1fr); column-gap: 12px; padding: 14px 0; }
+.ai-step + .ai-step { border-top: 1px solid var(--separator); }
+.ai-step-n { width: 26px; height: 26px; border-radius: 50%; display: grid; place-items: center; background: var(--accent-soft); color: var(--accent-text); font: 700 13px/1 var(--font-sans); font-variant-numeric: tabular-nums; }
+.ai-step-n::before { content: counter(ai-step); }
+.ai-step.done .ai-step-n { background: var(--success); color: #fff; }
+.ai-step.done .ai-step-n::before { content: none; }
+.ai-step-t { margin: 3px 0 6px; font: var(--t-headline); color: var(--text); }
+.ai-step.done .ai-step-t { color: var(--text-2); }
+.ai-p { margin: 0 0 8px; font: var(--t-callout); color: var(--text-2); text-wrap: pretty; }
+.ai-p:last-child { margin-bottom: 0; }
+.ai-p strong, .ai-fine strong { font-weight: 600; color: var(--text); }
+/* Keycaps in running text rest on the text's bottom edge, a little shorter than usual, so their line
+   keeps the paragraph's spacing. */
+.ai-p .keys { vertical-align: text-bottom; }
+.ai-p .kbd { height: 18px; }
+.ai-fine { margin: 6px 0 0; font: var(--t-foot); color: var(--text-3); text-wrap: pretty; }
+.ai-fine.pad { padding: 10px 16px 14px; }
+.ai-actions { display: flex; flex-wrap: wrap; gap: 8px; margin: 4px 0 2px; }
+.ai-ok, .ai-err, .ai-wait { display: flex; align-items: flex-start; gap: 8px; margin: 8px 0 0; font: var(--t-sub); }
+.ai-ok { color: var(--success-text); }
+.ai-err { color: var(--danger-text); }
+.ai-err a { color: inherit; font-weight: 600; text-decoration: underline; }
+.ai-wait { color: var(--text-2); }
+/* Icons and spinners sit on the first line of their message (centred on its 18px line), so one that
+   wraps on a phone keeps its icon beside its first words. */
+.ai-ok > .i, .ai-err > .i, .ai-wait > .i { flex: none; margin-top: 1px; }
+.ai-wait > .i { color: var(--text-3); }
+.ai-wait > .ai-spin { margin-top: 2.5px; }
+.ai-path { font: 400 12px/16px var(--font-mono); color: var(--text-2); overflow-wrap: anywhere; }
+.ai-ic { padding: 1px 6px; border-radius: 5px; background: var(--fill); font: 400 12.5px/1.45 var(--font-mono); color: var(--text); overflow-wrap: anywhere; }
+.ai-tunnel { margin-top: 2px; font: 400 13.5px/1 var(--font-mono); }
+
+.ai-code { position: relative; margin: 8px 0 4px; border-radius: 10px; background: var(--fill); }
+.ai-code pre { margin: 0; padding: 9px 42px 9px 12px; max-height: 300px; overflow: auto; font: 400 12.5px/19px var(--font-mono); color: var(--text); white-space: pre-wrap; overflow-wrap: anywhere; }
+.ai-nw { white-space: nowrap; } /* a command flag (--client) never splits after its dashes */
+.ai-code.block pre { white-space: pre; overflow-wrap: normal; }
+.ai-code code { font: inherit; }
+/* A code block that scrolls shows its thumb all the time (elsewhere thumbs appear on hover), so text cut
+   off at the block's edge is never a secret. */
+.ai-code pre::-webkit-scrollbar-thumb { background-color: var(--fill-2); }
+.ai-code pre::-webkit-scrollbar-thumb:hover { background-color: var(--text-4); }
+.ai-code .ai-copy { position: absolute; top: 3px; right: 3px; }
+.ai-copy.copied { color: var(--success-text); }
+.ai-panel .ai-copy[aria-disabled='true'] { opacity: 0.35; }
+
+.ai-crumbs { display: inline-flex; flex-wrap: wrap; align-items: center; gap: 3px; vertical-align: middle; }
+/* Each crumb keeps the chevron after it, so a path that wraps ends a row with "›" and starts the next
+   with a crumb, never with a stray chevron. */
+.ai-crumb-step { display: inline-flex; align-items: center; gap: 3px; }
+.ai-crumb { display: inline-flex; align-items: center; height: 22px; padding: 0 7px; border-radius: 6px; background: var(--fill); color: var(--text); font: 500 12.5px/1 var(--font-sans); white-space: nowrap; }
+.ai-crumb-sep { flex: none; color: var(--text-3); }
+
+.ai-fields { display: grid; grid-template-columns: max-content minmax(0, 1fr); align-items: start; gap: 8px 14px; margin: 10px 0 0; }
+.ai-fields dt { padding-top: 1px; font: var(--t-sub); color: var(--text-3); }
+.ai-fields dt:has(+ dd > .ai-code) { padding-top: 10px; }
+.ai-fields dd { min-width: 0; margin: 0; font: var(--t-callout); color: var(--text); }
+.ai-fields dd > .ai-code { margin: 0; }
+@media (max-width: 480px) {
+  .ai-fields { grid-template-columns: minmax(0, 1fr); gap: 2px; }
+  .ai-fields dt:has(+ dd > .ai-code) { padding-top: 6px; }
+  .ai-fields dd { margin-bottom: 6px; }
+}
+.ai-opt + .ai-opt { margin-top: 14px; padding-top: 12px; border-top: 1px solid var(--separator); }
+.ai-opt-t { margin-bottom: 4px; font: 600 13px/18px var(--font-sans); color: var(--text); }
+
+.ai-disc-wrap { padding: 0 16px 10px; }
+.ai-disc { display: inline-flex; align-items: center; gap: 6px; height: 32px; margin-left: -6px; padding: 0 8px 0 4px; border-radius: 8px; color: var(--accent-text); font: 600 13.5px/1 var(--font-sans); }
+.ai-disc:hover { background: var(--hover); }
+.ai-disc[aria-expanded='true'] .ai-disc-chev { transform: rotate(90deg); }
+.ai-disc-body { padding: 4px 0 6px; }
+
+/* ------------------------------------------------------------------ the connect animation */
+.ai-cx { --peer: var(--accent); position: fixed; inset: 0; z-index: 88; display: grid; place-items: center; padding: 16px; cursor: default; }
+/* A plain tint like every other sheet's scrim: re-blurring the whole page for the ~3 s the card animates
+   was most of the animation's cost per frame. */
+.ai-cx-scrim { position: absolute; inset: 0; background: var(--scrim); animation: ai-fade 320ms var(--ease-out) both; }
+.ai-cx-card { position: relative; width: min(400px, 100%); padding: 20px 22px 20px; border-radius: 30px; overflow: hidden; background: var(--surface-1); box-shadow: var(--shadow-3); text-align: center; animation: ai-card 600ms var(--ease-spring) both; }
+[data-theme='dark'] .ai-cx-card, [data-theme='dim'] .ai-cx-card { background: var(--surface-2); box-shadow: var(--shadow-3), 0 0 0 1px var(--border); }
+.ai-cx-card::before { content: ''; position: absolute; inset: 0; pointer-events: none; background: radial-gradient(48% 62% at 18% 26%, color-mix(in srgb, var(--accent) 20%, transparent), transparent 72%), radial-gradient(48% 62% at 82% 26%, color-mix(in srgb, var(--peer) 20%, transparent), transparent 72%); animation: ai-fade 900ms ease-out 900ms both; }
+.ai-cx-card > * { position: relative; }
+.ai-cx-off .ai-cx-card::before { opacity: 0.35; }
+
+.ai-cx-stage { position: relative; width: 100%; aspect-ratio: 380 / 168; margin: 0 auto 4px; }
+.ai-cx-svg { position: absolute; inset: 0; width: 100%; height: 100%; overflow: visible; }
+.ai-cx-s0 { stop-color: var(--accent); }
+.ai-cx-track { fill: none; stroke: var(--fill-2); stroke-width: 2; stroke-dasharray: 2 6; stroke-linecap: round; animation: ai-fade 300ms ease-out 420ms both; }
+.ai-cx-ray { fill: none; stroke-width: 3.2; stroke-linecap: round; stroke-dasharray: 100; animation: ai-draw 520ms cubic-bezier(0.6, 0, 0.3, 1) 680ms both; }
+.ai-cx-glow { fill: none; stroke-width: 9; stroke-linecap: round; opacity: 0.5; animation: ai-fade 500ms ease-out 1180ms both; }
+.ai-cx-off .ai-cx-ray, .ai-cx-off .ai-cx-glow { stroke-dasharray: 5 7; opacity: 0.55; animation: ai-fade 500ms ease-out 700ms both; }
+
+.ai-cx-node { position: absolute; top: 41.667%; width: 23.158%; aspect-ratio: 1; translate: -50% -50%; border-radius: 50%; }
+.ai-cx-node.is-home { --c: var(--accent); left: 18.421%; animation: ai-node-l 720ms var(--ease-spring) 120ms both; }
+.ai-cx-node.is-peer { --c: var(--peer); left: 81.579%; animation: ai-node-r 720ms var(--ease-spring) 240ms both; }
+.ai-cx-node svg { position: relative; z-index: 1; width: 100%; height: 100%; filter: drop-shadow(0 8px 18px color-mix(in srgb, var(--c) 40%, transparent)); }
+.ai-cx-node::before { content: ''; position: absolute; inset: -34%; border-radius: 50%; background: radial-gradient(closest-side, color-mix(in srgb, var(--c) 38%, transparent), transparent); animation: ai-fade 700ms ease-out 1200ms both, ai-breathe 2400ms ease-in-out 1900ms infinite; }
+.ai-cx-ring { position: absolute; inset: 0; border-radius: 50%; border: 2px solid var(--c); opacity: 0; animation: ai-ring 1300ms var(--ease-out) 1250ms 2; }
+.ai-cx-spark { position: absolute; left: 50%; top: 41.667%; width: 15%; aspect-ratio: 1; translate: -50% -50%; border-radius: 50%; background: radial-gradient(closest-side, #fff, color-mix(in srgb, var(--accent) 55%, transparent) 55%, transparent); opacity: 0; animation: ai-spark 700ms var(--ease-out) 1180ms both; }
+.ai-cx-off .ai-cx-spark { display: none; }
+.ai-cx-badge { position: absolute; z-index: 2; left: 50%; top: 41.667%; width: 11.5%; aspect-ratio: 1; translate: -50% -50%; animation: ai-pop 640ms var(--ease-spring) 1200ms both; }
+.ai-cx-badge svg { width: 100%; height: 100%; filter: drop-shadow(0 4px 10px color-mix(in srgb, var(--success) 45%, transparent)); }
+/* The badge is the card's own surface in a ring (a filled green disc with a white tick read as the check-mark
+   emoji): the success ring and tick, or with access off a quiet ring and the lock. */
+.ai-cx-badge-bg { fill: var(--surface-1); }
+[data-theme='dark'] .ai-cx-badge-bg, [data-theme='dim'] .ai-cx-badge-bg { fill: var(--surface-2); }
+.ai-cx-badge-ring { fill: none; stroke: var(--success); stroke-width: 1.8; }
+.ai-cx-off .ai-cx-badge svg { filter: drop-shadow(0 4px 10px rgb(0 0 0 / 0.16)); }
+.ai-cx-off .ai-cx-badge-ring { stroke: var(--text-3); }
+.ai-cx-lock { fill: none; stroke: var(--text-2); stroke-width: 2; stroke-linecap: round; stroke-linejoin: round; }
+.ai-cx-lock circle { fill: var(--text-2); stroke: none; }
+.ai-cx-tick { fill: none; stroke: var(--success-text); stroke-width: 3.2; stroke-linecap: round; stroke-linejoin: round; stroke-dasharray: 100; animation: ai-draw 380ms var(--ease-out) 1460ms both; }
+.ai-cx-cap { position: absolute; top: 80%; max-width: 36%; translate: -50% 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; font: 600 12.5px/16px var(--font-sans); color: var(--text-2); animation: ai-fade 400ms ease-out 700ms both; }
+.ai-cx-cap.is-home { left: 18.421%; }
+.ai-cx-cap.is-peer { left: 81.579%; }
+
+/* Particles: from ecosys to the assistant (reading) and back (changes). SVG user units. */
+.ai-cx-p { opacity: 0; }
+.ai-cx-p.to-peer { animation: ai-travel-r 1250ms cubic-bezier(0.45, 0.05, 0.55, 0.95) 1500ms 3 both; }
+.ai-cx-p.to-home { animation: ai-travel-l 1250ms cubic-bezier(0.45, 0.05, 0.55, 0.95) 1700ms 3 both; }
+.ai-cx-p.to-peer.d2 { animation-delay: 1910ms; }
+.ai-cx-p.to-peer.d3 { animation-delay: 2320ms; }
+.ai-cx-p.to-peer.d4 { animation-delay: 2730ms; }
+.ai-cx-p.to-home.d2 { animation-delay: 2110ms; }
+.ai-cx-p.to-home.d3 { animation-delay: 2520ms; }
+.ai-cx-halo { fill: var(--accent); opacity: 0.6; }
+.ai-cx-p.to-home .ai-cx-halo { fill: var(--peer); }
+.ai-cx-core { fill: #fff; }
+
+.ai-cx-title { margin: 4px 0 4px; font: var(--t-title2); color: var(--text); text-wrap: balance; animation: ai-rise 480ms var(--ease-out) 1540ms both; }
+.ai-cx-sub { max-width: 300px; margin: 0 auto; font: var(--t-callout); color: var(--text-2); text-wrap: balance; animation: ai-rise 480ms var(--ease-out) 1660ms both; }
+.ai-cx-done { min-width: 112px; margin-top: 16px; animation: ai-rise 480ms var(--ease-out) 1800ms both; }
+.ai-cx.out { pointer-events: none; }
+.ai-cx.out .ai-cx-card { animation: ai-out 240ms var(--ease-out) forwards; }
+.ai-cx.out .ai-cx-scrim { animation: ai-fade-out 260ms ease-out forwards; }
+
+/* Reduce motion: the finished picture, faded in once; nothing travels or pulses. */
+.ai-cx.reduced *, .ai-cx.reduced *::before, .ai-cx.reduced *::after { animation: none !important; }
+.ai-cx.reduced .ai-cx-flow, .ai-cx.reduced .ai-cx-spark, .ai-cx.reduced .ai-cx-ring { display: none; }
+.ai-cx.reduced .ai-cx-card, .ai-cx.reduced .ai-cx-scrim { animation: ai-fade 180ms ease-out both !important; }
+.ai-cx.reduced.out .ai-cx-card, .ai-cx.reduced.out .ai-cx-scrim { animation: ai-fade-out 120ms ease-out forwards !important; }
+
+@media (max-width: 640px) {
+  .ai-cx { place-items: end center; padding: 10px 10px calc(10px + env(safe-area-inset-bottom)); }
+  .ai-cx-card { width: 100%; border-radius: 32px; animation-name: ai-card-up; }
+  .ai-cx.out .ai-cx-card { animation-name: ai-out-down; }
+}
+
+@keyframes ai-fade { from { opacity: 0; } }
+@keyframes ai-fade-out { to { opacity: 0; } }
+@keyframes ai-card { from { opacity: 0; transform: translateY(18px) scale(0.94); } }
+@keyframes ai-card-up { from { opacity: 0; transform: translateY(70%); } }
+@keyframes ai-out { to { opacity: 0; transform: translateY(8px) scale(0.97); } }
+@keyframes ai-out-down { to { opacity: 0; transform: translateY(40%); } }
+@keyframes ai-node-l { from { opacity: 0; transform: translateX(42%) scale(0.55); } }
+@keyframes ai-node-r { from { opacity: 0; transform: translateX(-42%) scale(0.55); } }
+@keyframes ai-draw { from { stroke-dashoffset: 100; } }
+@keyframes ai-pop { 0% { opacity: 0; transform: scale(0); } 40% { opacity: 1; } }
+@keyframes ai-rise { from { opacity: 0; transform: translateY(8px); } }
+@keyframes ai-ring { 0% { opacity: 0.55; transform: scale(1); } 100% { opacity: 0; transform: scale(1.6); } }
+@keyframes ai-spark { 0% { opacity: 0.95; transform: scale(0.2); } 100% { opacity: 0; transform: scale(2.6); } }
+@keyframes ai-breathe { 50% { opacity: 0.55; transform: scale(1.08); } }
+@keyframes ai-travel-r { 0% { transform: translateX(0); opacity: 0; } 12%, 86% { opacity: 1; } 100% { transform: translateX(148px); opacity: 0; } }
+@keyframes ai-travel-l { 0% { transform: translateX(0); opacity: 0; } 12%, 86% { opacity: 1; } 100% { transform: translateX(-148px); opacity: 0; } }
+
+/* ------------------------------------------------------------------ the AI status button (an app's sidebar head) */
+/* Beside the app switcher, as one pair of header buttons; shown once an assistant is set up. The AI glyph's docked
+   circle is the assistant: lit in the success colour while one is connected (the green dot elsewhere), and the glyph
+   is struck through while AI access is off. The head is tight and the app's name comes first ("schedule" keeps its
+   last letters), so the button takes no gap of its own: 30px wide, its edge meeting the switcher's (their glyphs stay
+   13px apart). On a phone the drawer is wider and fingers want the full 36px. */
+.ai-side { display: flex; flex: none; margin: 0 -10px; }
+.ai-side .ai-chip { width: 30px; height: 30px; }
+@media (max-width: 640px) {
+  .ai-side { margin: 0 -6px 0 -10px; }
+  .ai-side .ai-chip { width: 36px; height: 36px; }
+}
+.ai-chip.on .i circle { fill: var(--success); stroke: var(--success); }
+
+/* ------------------------------------------------------------------ Reduce motion: no endless loops */
+@media (prefers-reduced-motion: reduce) {
+  .ai-viz-line i, .ai-live-dot::after, .ai-spin, .ai-page, .ai-loading .ai-spin { animation: none !important; }
+  .ai-viz-line i { display: none; }
+}
+[data-reduce-motion='true'] .ai-viz-line i, [data-reduce-motion='true'] .ai-live-dot::after, [data-reduce-motion='true'] .ai-spin, [data-reduce-motion='true'] .ai-page { animation: none !important; }
+[data-reduce-motion='true'] .ai-viz-line i { display: none; }
