@@ -64,6 +64,15 @@ const monthTitle = (t) => fmt(new Date(t), { month: 'long', year: 'numeric' });
 const longDate = (t) => fmt(new Date(t), { weekday: 'long', month: 'long', day: 'numeric', year: 'numeric' });
 const timeOf = (t) => fmt(new Date(t), { hour: 'numeric', minute: '2-digit' });
 const PROVIDER_NAME = { onedrive: 'OneDrive', gdrive: 'Google Drive' };
+/**
+ * The providers' own marks, used only to say which service a button connects to (as their brand guidelines
+ * allow for "connect to" buttons): OneDrive's four-blue cloud and Google Drive's six-part triangle.
+ */
+const PROVIDER_LOGO = {
+  onedrive: `<svg viewBox="0 0 32 32" aria-hidden="true" focusable="false"><path d="M12.2 11.19l6.72 4.03 4-1.69A6.48 6.48 0 0 1 25.5 13c.15 0 .29 0 .44.02A10 10 0 0 0 7.9 10H8a7.96 7.96 0 0 1 4.2 1.19z" fill="#0364b8"/><path d="M12.2 11.19A7.96 7.96 0 0 0 8 10h-.1a8 8 0 0 0-6.46 12.57l5.92-2.49 2.63-1.11 5.86-2.47 3.06-1.29z" fill="#0078d4"/><path d="M25.94 13.02A6.4 6.4 0 0 0 25.5 13a6.48 6.48 0 0 0-2.58.53l-4 1.69 1.16.7 3.81 2.27 1.66 1 5.68 3.4a6.5 6.5 0 0 0-5.29-9.57z" fill="#1490df"/><path d="M25.55 19.18l-1.66-.99-3.81-2.28-1.16-.7-3.06 1.29-5.86 2.47-2.64 1.1-5.92 2.5A7.99 7.99 0 0 0 8 26h17.5a6.5 6.5 0 0 0 5.72-3.42z" fill="#28a8ea"/></svg>`,
+  gdrive: `<svg viewBox="0 0 87.3 78" aria-hidden="true" focusable="false"><path d="m6.6 66.85 3.85 6.65c.8 1.4 1.95 2.5 3.3 3.3l13.75-23.8h-27.5c0 1.55.4 3.1 1.2 4.5z" fill="#0066da"/><path d="m43.65 25-13.75-23.8c-1.35.8-2.5 1.9-3.3 3.3l-25.4 44a9.06 9.06 0 0 0 -1.2 4.5h27.5z" fill="#00ac47"/><path d="m73.55 76.8c1.35-.8 2.5-1.9 3.3-3.3l1.6-2.75 7.65-13.25c.8-1.4 1.2-2.95 1.2-4.5h-27.502l5.852 11.5z" fill="#ea4335"/><path d="m43.65 25 13.75-23.8c-1.35-.8-2.9-1.2-4.5-1.2h-18.5c-1.6 0-3.15.45-4.5 1.2z" fill="#00832d"/><path d="m59.8 53h-32.3l-13.75 23.8c1.35.8 2.9 1.2 4.5 1.2h50.8c1.6 0 3.15-.45 4.5-1.2z" fill="#2684fc"/><path d="m73.4 26.5-12.7-22c-.8-1.4-1.95-2.5-3.3-3.3l-13.75 23.8 16.15 28h27.45c0-1.55-.4-3.1-1.2-4.5z" fill="#ffba00"/></svg>`,
+};
+const providerLogo = (id, cls = '') => `<span class="ph-prov-icon ${id}${cls ? ` ${cls}` : ''}">${PROVIDER_LOGO[id] || icon('cloud')}</span>`;
 const PROVIDER_PATH = { onedrive: 'Pictures', gdrive: 'My Drive' };
 
 // ---------------------------------------------------------------- state
@@ -569,12 +578,12 @@ function viewBackup() {
   }
 
   const providerCard = (id, blurb) =>
-    `<button type="button" class="ph-provider" data-connect="${id}"><span class="ph-prov-icon ${id}">${icon('cloud', { size: 26 })}</span><span class="grow"><strong>${PROVIDER_NAME[id]}</strong><span>${esc(blurb)}</span></span>${icon('chevron-right', { size: 18 })}</button>`;
+    `<button type="button" class="ph-provider" data-connect="${id}">${providerLogo(id)}<span class="grow"><strong>${PROVIDER_NAME[id]}</strong><span>${esc(blurb)}</span></span>${icon('chevron-right', { size: 18 })}</button>`;
   const acct = cfg.account || {};
   const quota = acct.total ? `<div class="ph-quota"><div class="ph-bar"><span style="width:${Math.min(100, (acct.used / acct.total) * 100)}%"></span></div><span>${bytes(acct.used)} of ${bytes(acct.total)} used</span></div>` : '';
   const where = cfg.provider
     ? `<div class="group"><div class="ph-row-item">
-          <span class="ph-prov-icon ${cfg.provider}">${icon('cloud', { size: 22 })}</span>
+          ${providerLogo(cfg.provider)}
           <span class="grow"><strong>${esc(PROVIDER_NAME[cfg.provider])}</strong><span class="muted">${esc([acct.name, acct.email].filter(Boolean).join(' · ') || 'Connected')}</span>${quota}</span>
           <button type="button" class="btn btn-ghost btn-sm" data-disconnect>Disconnect</button>
         </div>
@@ -1433,7 +1442,7 @@ function setupDialog(provider) {
     title: `Set up ${PROVIDER_NAME[provider]} backup`,
     className: 'ph-setup',
     body: `<form class="modal-body" data-form>
-      <p class="muted">${PROVIDER_NAME[provider]} lets an app back up into your account once it’s registered. It’s free and takes a few minutes, and you only do it once per copy of ecosys.</p>
+      <div class="ph-setup-lead">${providerLogo(provider)}<p class="muted">${PROVIDER_NAME[provider]} lets an app back up into your account once it’s registered. It’s free and takes a few minutes, and you only do it once per copy of ecosys.</p></div>
       <ol class="ph-steps">${steps.map((s) => `<li>${s}</li>`).join('')}</ol>
       <label class="ph-field"><span>Redirect address</span><span class="ph-copy"><input class="input" readonly value="${esc(uri)}" /><button type="button" class="btn btn-secondary btn-sm" data-copy>Copy</button></span></label>
       ${provider === 'onedrive' && loopIp ? `<p class="ph-warn">${icon('alert', { size: 16 })}<span>Microsoft accepts <code>localhost</code> but not <code>127.0.0.1</code> for this. Open ecosys at <a href="${esc(uri.replace('127.0.0.1', 'localhost').replace(/auth\.html$/, ''))}">${esc(origin.replace('127.0.0.1', 'localhost'))}</a> and set it up there.</span></p>` : ''}

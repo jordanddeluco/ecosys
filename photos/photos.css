@@ -186,9 +186,12 @@
 .ph-provider strong { display: block; font: var(--t-headline); }
 .ph-provider .grow > span { display: block; color: var(--text-3); font: var(--t-sub); margin-top: 2px; }
 .ph-provider > .i:last-child { color: var(--text-4); }
-.ph-prov-icon { flex: none; width: 44px; height: 44px; display: grid; place-items: center; border-radius: 12px; color: #fff; }
-.ph-prov-icon.onedrive { background: linear-gradient(135deg, #2f8cf0, #1458c5); }
-.ph-prov-icon.gdrive { background: linear-gradient(135deg, #2fb36a, #f2b51c 58%, #e9573f); }
+/* The providers' own logos, on a white tile in every theme (their colours are drawn for white). */
+.ph-prov-icon { flex: none; width: 44px; height: 44px; display: grid; place-items: center; border-radius: 12px; background: #fff; box-shadow: inset 0 0 0 1px rgb(16 18 40 / 0.08); }
+.ph-prov-icon svg { width: 66%; height: 66%; }
+.ph-prov-icon.gdrive svg { width: 58%; height: 58%; }
+.ph-setup-lead { display: flex; align-items: center; gap: 14px; }
+.ph-setup-lead p { margin: 0; }
 .ph-sec .group { max-width: 760px; }
 .ph-row-item { display: flex; align-items: center; gap: 14px; padding: 14px 16px; }
 .ph-row-item + .ph-row-item { border-top: 1px solid var(--separator); }
