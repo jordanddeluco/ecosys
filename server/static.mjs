@@ -34,6 +34,22 @@ const DENY_TOP = new Set(['node_modules', 'server', 'mcp', 'tests', 'server.mjs'
 export const BASE_CSP =
   "default-src 'self'; script-src 'self'; style-src 'self' 'unsafe-inline'; img-src 'self' data: blob:; font-src 'self'; connect-src 'self'; manifest-src 'self'; object-src 'none'; base-uri 'none'; form-action 'self'; frame-ancestors 'none'";
 
+/**
+ * Photos backs up to OneDrive or Google Drive from the browser, so its pages (and only those) may also talk
+ * to those two clouds, and play the videos it keeps as blobs. photos/index.html's meta policy lists the same.
+ */
+export const PHOTOS_CLOUD_HOSTS = [
+  'https://login.microsoftonline.com',
+  'https://graph.microsoft.com',
+  'https://api.onedrive.com',
+  'https://*.1drv.com',
+  'https://*.sharepoint.com',
+  'https://*.microsoftpersonalcontent.com',
+  'https://www.googleapis.com',
+];
+export const photosCsp = (csp) =>
+  csp.replace("connect-src 'self'", `connect-src 'self' ${PHOTOS_CLOUD_HOSTS.join(' ')}`).replace("img-src 'self' data: blob:;", "img-src 'self' data: blob:; media-src 'self' blob:;");
+
 /** Reason a decoded path is refused, or null when it may be looked up. */
 export function badPath(decoded) {
   if (!decoded.startsWith('/')) return 400;
@@ -55,7 +71,7 @@ function inside(root, p) {
 // Pages that still carry inline <script> blocks get their exact hashes added to script-src, so the
 // strict policy can be enforced today without breaking them. Injected scripts never match.
 const cspCache = new Map();
-function cspFor(file, mtimeMs, body) {
+function cspFor(file, mtimeMs, body, photos = false) {
   const hit = cspCache.get(file);
   if (hit && hit.mtimeMs === mtimeMs) return hit.csp;
   const html = body.toString('utf8');
@@ -66,7 +82,8 @@ function cspFor(file, mtimeMs, body) {
     if (/\bsrc\s*=/i.test(m[1])) continue;
     hashes.push(`'sha256-${createHash('sha256').update(m[2], 'utf8').digest('base64')}'`);
   }
-  const csp = hashes.length ? BASE_CSP.replace("script-src 'self'", `script-src 'self' ${hashes.join(' ')}`) : BASE_CSP;
+  const base = photos ? photosCsp(BASE_CSP) : BASE_CSP;
+  const csp = hashes.length ? base.replace("script-src 'self'", `script-src 'self' ${hashes.join(' ')}`) : base;
   cspCache.set(file, { mtimeMs, csp });
   return csp;
 }
@@ -111,7 +128,7 @@ export async function serveStatic(req, res, { root, url, headers, send }) {
     return res.end();
   }
   const body = await readFile(real);
-  if (type.startsWith('text/html')) out['Content-Security-Policy'] = cspFor(real, info.mtimeMs, body);
+  if (type.startsWith('text/html')) out['Content-Security-Policy'] = cspFor(real, info.mtimeMs, body, /^\/photos\//i.test(decoded));
   out['Content-Length'] = body.length;
   res.writeHead(200, out);
   res.end(req.method === 'HEAD' ? undefined : body);

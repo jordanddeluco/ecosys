@@ -266,6 +266,7 @@ export const APPS = [
   { id: 'tasks', name: 'Tasks', url: `${BASE}tasks/`, blurb: 'To-dos, lists & plans' },
   { id: 'schedule', name: 'Schedule', url: `${BASE}schedule/`, blurb: 'Calendar & time blocks' },
   { id: 'notes', name: 'Notes', url: `${BASE}notes/`, blurb: 'Ideas, lists & meeting notes' },
+  { id: 'photos', name: 'Photos', url: `${BASE}photos/`, blurb: 'Photos, albums & cloud backup' },
 ];
 
 let currentApp = 'home';
@@ -290,7 +291,7 @@ let gid = 0;
  *                  than half inside the squircle (apps are squircles, assistants are circles)
  */
 export function appIcon(id, { small = false } = {}) {
-  const tiles = { home: ['#3e4266', '#1d2036'], tasks: ['#1d9bf0', '#1660c2'], schedule: ['#8a6eff', '#5534e0'], notes: ['#ff9214', '#e0560a'], ai: ['#ff4f9a', '#d8146b'] };
+  const tiles = { home: ['#3e4266', '#1d2036'], tasks: ['#1d9bf0', '#1660c2'], schedule: ['#8a6eff', '#5534e0'], notes: ['#ff9214', '#e0560a'], photos: ['#22c38e', '#0b8a6a'], ai: ['#ff4f9a', '#d8146b'] };
   if (!tiles[id]) id = 'home';
   const [lit, deep] = tiles[id];
   const g = `ecg${++gid}`;
@@ -315,6 +316,13 @@ export function appIcon(id, { small = false } = {}) {
     front = small
       ? `<path d="M23.5 14H34L46 26V44.5a5.5 5.5 0 0 1-5.5 5.5H23.5a5.5 5.5 0 0 1-5.5-5.5V19.5a5.5 5.5 0 0 1 5.5-5.5z" fill="#fff"/><path d="M34 14 46 26H36a2 2 0 0 1-2-2z" fill="${cut}" fill-opacity=".45"/>${line('M24 38H29', 4, cut)}${dot(39, 38, 4, cut)}`
       : `<path d="M24.5 15H33.5L45 26.5V43.5a5.5 5.5 0 0 1-5.5 5.5H24.5a5.5 5.5 0 0 1-5.5-5.5V20.5a5.5 5.5 0 0 1 5.5-5.5z" fill="#fff"/><path d="M34.3 16.6 45 27.3V28.1H36.3a2 2 0 0 1-2-2z" fill="${deep}" fill-opacity=".3"/><path d="M33.5 15 45 26.5H35.5a2 2 0 0 1-2-2z" fill="${cut}" fill-opacity=".45"/>${line('M23.4 38c1.22-2.9 2.58-2.9 3.8 0s2.58 2.9 3.8 0', 4.5, cut)}${dot(39.2, 38, 3.6, cut)}`;
+    shade = false;
+  } else if (id === 'photos') {
+    // A print (55%) tucked behind the current photo, which has a sun dot and a ridge cut through it.
+    back = small ? box(12, 12, 24, 20, 4, '.55') : box(13, 14, 25, 21, 5, '.55');
+    front = small
+      ? `<rect x="22" y="24" width="30" height="28" rx="6" fill="#fff"/><path d="M26 48 34 38 40 44 44 40 48 44V48Z" fill="${cut}"/>${dot(43, 31, 3.5, cut)}`
+      : `<rect x="21.5" y="23.5" width="29.5" height="27" rx="6" fill="#fff"/><path d="M25.5 46.5 33.2 37.6 38.6 43 42.4 39.6 47 44.2V46.5Z" fill="${cut}" stroke="${cut}" stroke-width="1.5" stroke-linejoin="round"/>${dot(42.6, 31, 3.4, cut)}`;
     shade = false;
   } else if (id === 'ai') {
     back = `<path d="${

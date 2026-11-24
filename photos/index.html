@@ -1,0 +1,25 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <!-- connect-src also lists OneDrive and Google Drive (cloud backup); the local server sends the same policy (server/static.mjs). -->
+    <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self'; style-src 'self' 'unsafe-inline'; img-src 'self' data: blob:; media-src 'self' blob:; font-src 'self'; connect-src 'self' https://login.microsoftonline.com https://graph.microsoft.com https://api.onedrive.com https://*.1drv.com https://*.sharepoint.com https://*.microsoftpersonalcontent.com https://www.googleapis.com; manifest-src 'self'; object-src 'none'; base-uri 'none'; form-action 'self'" />
+    <meta name="referrer" content="no-referrer" />
+    <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+    <meta name="description" content="photos — the ecosys photo library, with backup to OneDrive or Google Drive" />
+    <meta name="mobile-web-app-capable" content="yes" />
+    <meta name="apple-mobile-web-app-capable" content="yes" />
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+    <title>photos</title>
+    <link rel="manifest" href="./manifest.webmanifest" />
+    <link rel="icon" href="../shared/icons/photos.svg" type="image/svg+xml" />
+    <script src="../shared/boot.js"></script>
+    <link rel="stylesheet" href="../shared/ui.css" />
+    <link rel="stylesheet" href="./photos.css" />
+  </head>
+  <body>
+    <div id="app"></div>
+    <noscript>photos needs JavaScript to run.</noscript>
+    <script type="module" src="./app.js"></script>
+  </body>
+</html>

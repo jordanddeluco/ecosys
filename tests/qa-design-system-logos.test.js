@@ -91,11 +91,11 @@ describe('ui.css: app logos', () => {
     for (const sel of own) assert.ok(outranks(spec(sel), spec(prelude)) > 0, `${sel} outranks the shared rim`);
   });
 
-  test('the app switcher is one row of five from ui.css alone (shell.js needs no inline grid)', () => {
+  test('the app switcher is one row of six from ui.css alone (shell.js needs no inline grid)', () => {
     const s = declsFor('.switcher');
-    assert.equal(s.get('width'), '336px', 'five 62px tiles, their gaps and the padding');
+    assert.equal(s.get('width'), '398px', 'six 62px tiles, their gaps and the padding');
     assert.equal(s.get('min-width'), '0', "and nothing wider: on a narrow phone the menu's max-width wins");
-    assert.equal(declsFor('.switcher-grid').get('grid-template-columns'), 'repeat(5, minmax(0, 1fr))', 'Home, Tasks, Schedule, Notes and AI in one row');
+    assert.equal(declsFor('.switcher-grid').get('grid-template-columns'), 'repeat(6, minmax(0, 1fr))', 'Home, Tasks, Schedule, Notes, Photos and AI in one row');
   });
 
   test('the Today glyph draws no date number, in ui.css or in todayGlyph()', () => {

@@ -1,6 +1,6 @@
 # ecosys
 
-A small suite of personal apps that work as one: **Tasks**, **Schedule**, **Notes** and a **Home** page that shows your day at a glance. It runs in any modern browser, keeps your data on your own computer, and needs nothing installed but Node.js. If you want, your own AI assistant (Claude, ChatGPT or Grok) can read and update it for you.
+A small suite of personal apps that work as one: **Tasks**, **Schedule**, **Notes**, **Photos** and a **Home** page that shows your day at a glance. It runs in any modern browser, keeps your data on your own computer, and needs nothing installed but Node.js. If you want, your own AI assistant (Claude, ChatGPT or Grok) can read and update it for you.
 
 **Live demo:** https://jordanddeluco.github.io/ecosys/ (browser-only, see [GitHub Pages](#github-pages))
 
@@ -10,6 +10,7 @@ A small suite of personal apps that work as one: **Tasks**, **Schedule**, **Note
 - **Tasks**: a to-do app in the spirit of Microsoft To Do and Todoist. Inbox, Today, Upcoming, Important and Completed, plus your own lists and labels, priorities P1 to P4, steps, deadlines and repeats.
 - **Schedule**: a calendar in the spirit of Google Calendar and Apple Calendar. Day, multi-day, week, month, year and schedule views, with your tasks on the same timeline.
 - **Notes**: notes in the spirit of Apple Notes, with nested coloured folders, tags, checklists, links and backlinks, daily and meeting notes, search operators, version history and Markdown export. See the [Notes guide](docs/notes.md).
+- **Photos**: a photo and video library laid out like Apple Photos and Google Photos, with Years, Months, Days and All views, Memories, albums, favourites, Recently Deleted and a full-screen viewer. It can back up to **OneDrive** or **Google Drive**, into a folder of its own in your cloud, the way Samsung Gallery backs up to OneDrive. See the [Photos guide](docs/photos.md).
 
 ## How they work together
 
@@ -39,6 +40,7 @@ This starts ecosys at http://127.0.0.1:4300 and opens your browser. On Windows y
 | Tasks | http://127.0.0.1:4300/tasks/ |
 | Schedule | http://127.0.0.1:4300/schedule/ |
 | Notes | http://127.0.0.1:4300/notes/ |
+| Photos | http://127.0.0.1:4300/photos/ |
 | AI endpoint (MCP, for AI apps rather than your browser) | http://127.0.0.1:4300/mcp |
 
 In Chrome or Edge, use **Install app** in the address bar to give an app its own window and taskbar icon.
@@ -66,6 +68,8 @@ The first browser that connects to a new data folder brings its data with it. La
 **Without the server** (the GitHub Pages copy, or any static web host), everything stays in that one browser.
 
 Settings → Your data has **Export backup** (a JSON file with everything), **Import backup**, **Start over with sample data** and **Erase everything**. Notes also exports to Markdown (one note, or all of them as a `.zip`).
+
+**Photos are different:** they are too big for the shared data file, so each browser keeps its own photo library (IndexedDB), and the way to have them everywhere is Cloud backup: connect OneDrive or Google Drive and use **Restore** in another browser.
 
 ## Connect an AI assistant
 
@@ -120,6 +124,9 @@ index.html, home.js, home.css   Home
 tasks/                          the Tasks app
 schedule/                       the Schedule app
 notes/                          the Notes app
+photos/                         the Photos app
+  lib/                          library (IndexedDB), import and EXIF, OneDrive / Google Drive backup and sign-in
+  cloud-config.js               optional app registrations for cloud backup (client IDs, not secrets)
   core/                         notes data model, Markdown, search, note operations (shared with the server)
   editor/                       the rich-text editor
   export.js, history/           Markdown and .zip export and import; version history (IndexedDB)

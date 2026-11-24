@@ -766,9 +766,9 @@ code.example { font: 500 12px/18px var(--font-mono); color: var(--text-2); backg
 @keyframes sheet-down { from { transform: translateY(-100%); } to { transform: none; } }
 
 /* ------------------------------------------------------------------ app switcher (Proton) */
-/* One row, as on Home: Home, Tasks, Schedule, Notes and AI (a sixth app wraps to a second row). */
-.switcher { padding: 8px; width: 336px; min-width: 0; }
-.switcher-grid { display: grid; grid-template-columns: repeat(5, minmax(0, 1fr)); gap: 2px; }
+/* One row, as on Home: Home, Tasks, Schedule, Notes, Photos and AI (a seventh app wraps to a second row). */
+.switcher { padding: 8px; width: 398px; min-width: 0; }
+.switcher-grid { display: grid; grid-template-columns: repeat(6, minmax(0, 1fr)); gap: 2px; }
 .switcher-app { display: flex; flex-direction: column; align-items: center; gap: 7px; min-width: 0; padding: 10px 2px 9px; border-radius: 12px; color: var(--text); font-size: 12px; font-weight: 500; text-decoration: none !important; transition: background var(--dur-fast); }
 .switcher-app:hover { background: var(--hover); }
 .switcher-app:focus-visible { outline: 2px solid var(--focus-color); outline-offset: -2px; } /* never the same grey as the current app */

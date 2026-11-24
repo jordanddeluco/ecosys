@@ -5,7 +5,7 @@
 //   - Settings > Notes uses Notes' own labels ("AI assistants can: Read & edit / Read / Off", "Sort checked items:
 //     Automatically / Manually"), never "AI access", which is Connect AI's switch for everything, and links to it
 //   - Settings > Schedule has working hours, read as the server's 09:00-17:00 while unset
-//   - the app switcher takes its five columns from ui.css (no inline grid)
+//   - the app switcher takes its six columns from ui.css (no inline grid)
 // Run with: npm test
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
@@ -92,10 +92,10 @@ test('Settings > Schedule has working hours, read as the server’s 09:00–17:0
   assert.match(core, /let workEnd = setEnd \|\| '17:00';/);
 });
 
-test('the app switcher takes its five columns from ui.css', () => {
+test('the app switcher takes its six columns from ui.css', () => {
   const body = fnBody('openSwitcher');
   assert.doesNotMatch(body, /grid-template-columns|minWidth/, 'no inline grid');
-  assert.match(read('shared/ui.css'), /\.switcher-grid \{[^}]*grid-template-columns: repeat\(5, minmax\(0, 1fr\)\)/);
+  assert.match(read('shared/ui.css'), /\.switcher-grid \{[^}]*grid-template-columns: repeat\(6, minmax\(0, 1fr\)\)/);
 });
 
 test('Home’s blurb in APPS says what Home is now: the apps', () => {

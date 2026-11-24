@@ -64,6 +64,7 @@ app.server.listen(PORT, HOST, () => {
     `  Tasks     ${url}tasks/`,
     `  Schedule  ${url}schedule/`,
     `  Notes     ${url}notes/`,
+    `  Photos    ${url}photos/   (OneDrive backup: open it at http://localhost:${PORT}/photos/)`,
     `  AI (MCP)  ${url}mcp   (connect from Home, Connect AI)`,
     `  Data      ${DATA_DIR}`,
   ];
